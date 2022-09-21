@@ -19,6 +19,7 @@ namespace Semantica
         //NO SE PUEDE NOMBRAR AL IGUAL QUE UN METODO PREVIAMENTE PROGRAMADO 
         List<Variable> variables = new List<Variable>();
         Stack<float> stack = new Stack<float>();
+        Variable.TipoDato dominante;
         public Lenguaje()
         {
 
@@ -68,7 +69,6 @@ namespace Semantica
 
         private float getValor (string nombreVariable)
         {
-            //PARA BUSCAR VARIABLE
             foreach (Variable v in variables)
             {
                 if (v.getNombre() == nombreVariable)
@@ -76,7 +76,6 @@ namespace Semantica
                     return v.getValor();
                 }
             }
-            //EN CASO DE NO ENCONTRAR LA VARIABLE
             return 0;
         }
 
@@ -138,7 +137,7 @@ namespace Semantica
         }
 
         //Lista_identificadores -> identificador (,Lista_identificadores)?
-        private void Lista_identificadores(Variable.TipoDato tipo)      //RECIBE EL TIPO DE DATO DE LA VARIABLE
+        private void Lista_identificadores(Variable.TipoDato tipo)
         {
             if (getClasificacion() == Tipos.Identificador)
             {
@@ -228,11 +227,15 @@ namespace Semantica
 
         private Variable.TipoDato evaluaNumero(float resultado)
         {
-            if ( resultado <= 255)
+            if (resultado%1 != 0)
+            {
+                return Variable.TipoDato.Float;
+            }
+            else if ( resultado <= 255)
             {
                 return Variable.TipoDato.Char;
             }
-            else if ( resultado <= 65535 )
+            else if ( resultado <= 65535)
             {
                 return Variable.TipoDato.Int;
             }
@@ -250,27 +253,36 @@ namespace Semantica
         //Asignacion -> identificador = cadena | Expresion;
         private void Asignacion()
         {
-            //REQUERIMIENTO 2-(SI NO EXISTE LA VARIABLE(GETCONTENIDO) 
-            //SE LEVANTA LA EXCEPCION) Y TERMINA EL PROGRAMA
             log.WriteLine();
             log.Write(getContenido()+" = ");
             string nombreVariable = getContenido();
-            //DEBE DE EXISTIR LA VARIABLE SI NO SE LEVNATA LA EXCEPCION
             if (!existeVariable(nombreVariable))
             {
                 throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
             }
             match(Tipos.Identificador);             
             match(Tipos.Asignacion);
-            //SE ELIMINO EL IF PORQUE NO EXISTE EL TIPO DE DATO CADENA
+            dominante = Variable.TipoDato.Char;
             Expresion();
             match(";");
-            //GUARDAR EL RESULTADO
             float resultado = stack.Pop();
             log.Write("= " + resultado);
             log.WriteLine();
-            //AQUI SE MODIFICA EL RESULTADO A LA VARIABLE
-            modVariable(nombreVariable, resultado);
+            Console.WriteLine(dominante);
+            Console.WriteLine(evaluaNumero(resultado));
+            if (dominante < evaluaNumero(resultado))
+            {
+                dominante = evaluaNumero(resultado);
+            }
+            if (dominante <= getTipo(nombreVariable))
+            {
+                modVariable(nombreVariable, resultado);
+            }
+            else
+            {
+                throw new Error("\nError de semantica no podemos asignar un  <"+ dominante+
+                                    "> a un "+ getTipo(nombreVariable)+" en la linea "+linea, log);
+            }
         }
 
         //While -> while(Condicion) bloque de instrucciones | instruccion
@@ -331,10 +343,7 @@ namespace Semantica
         //Incremento -> Identificador ++ | --
         private void Incremento()
         {
-            // REQUERIMIENTO 2 SI NO EXISTE LA VARIABLE SE LEVANTA LA EXCEPCION
-            //GUARDAR EL VALOR DE LA VARIABELS
             string variable = getContenido();
-            //string nombreVariable = getContenido();
             if (!existeVariable(variable))
             {
                 throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
@@ -342,15 +351,11 @@ namespace Semantica
             match(Tipos.Identificador);
             if(getContenido() == "++")
             {
-                //REQUERIMIENTO 4 - OBTENER EL VALOS DE LA VARIABLE INCREMENTAR UNO 
-                //Y VOLVER A METER EL NUEVO VALOR
                 match("++");
-                //                    LEO EL VALOR DE LA VARIABLE Y LE SUMO 1  
                 modVariable(variable, getValor(variable)+1);
             }
             else
             {
-                //LO MISMO DE ARRIBA PERO CON -1
                 match("--");
                 modVariable(variable, getValor(variable)-1);
             }
@@ -362,7 +367,7 @@ namespace Semantica
             match("switch");
             match("(");
             Expresion();
-            stack.Pop(); //NO SE LE ASIGAN A NADA Y SE PIERDE EL VALOR
+            stack.Pop(); 
             match(")");
             match("{");
             ListaDeCasos();
@@ -446,16 +451,12 @@ namespace Semantica
             match("(");
             if (getClasificacion() == Tipos.Cadena)
             {
-                //REQUERIMIENTO 1 ELIMINAR COMILLAS DOBLES
-                /*String.Replace(x, y) se utiliza para reemplazar
-                todas las apariciones de la cadena x con la cadena y */
                 setContenido(getContenido().Replace("\"", ""));
                 setContenido(getContenido().Replace("\\n","\n"));
                 setContenido(getContenido().Replace("\\t","\t"));
                 Console.Write(getContenido());
                 match(Tipos.Cadena);
             }
-            //SI NO ES CADENA ES EXPRECIÓN
             else
             {
                 Expresion();
@@ -473,15 +474,12 @@ namespace Semantica
             match(Tipos.Cadena);
             match(",");
             match("&");
-            //REQUERIMIENTO 2
             string nombreVariable = getContenido();
             if (!existeVariable(nombreVariable))
             {
                 throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
             }
             string val = ""+Console.ReadLine();
-            //REQUERIMIENTO 5 - YA SE CAPTURO EL STRING DEL VALOR HAY QUE CONVERTIR A FLOAT
-            //YA SE COMPROBO QUE SI EXISTE
             float valf = Convert.ToSingle(val);
             modVariable(nombreVariable, (valf));
             match(Tipos.Identificador);
@@ -514,7 +512,6 @@ namespace Semantica
                 match(Tipos.OperadorTermino);
                 Termino();
                 log.Write(operador + " ");
-                //SACAMOS NUMEROS DEL STACK
                 float n1 = stack.Pop();
                 float n2 = stack.Pop();
                 switch (operador)
@@ -562,20 +559,22 @@ namespace Semantica
             if (getClasificacion() == Tipos.Numero)
             {
                 log.Write(getContenido() + " ");
-                stack.Push(float.Parse(getContenido())); //POP PARA METER NUMERO
+                if (dominante < evaluaNumero(float.Parse(getContenido())))
+                {
+                    dominante = evaluaNumero(float.Parse(getContenido()));
+                }
+                stack.Push(float.Parse(getContenido()));
                 match(Tipos.Numero);
             }
             else if (getClasificacion() == Tipos.Identificador)
             {
-                // REQUERIMIENTO 2 SI NO EXISTE LA VARIABLE SE LEVANTA LA EXCEPCION
                 string nombreVariable = getContenido();
                 if (!existeVariable(nombreVariable))
                 {
                     throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
                 }
                 log.Write(getContenido() + " ");
-                //BUSCA EL CONTENIDO Y LO BUSCA
-                stack.Push(getValor(getContenido())); //POP PARA METER NUMERO
+                stack.Push(getValor(getContenido()));
                 match(Tipos.Identificador);
             }
             else
