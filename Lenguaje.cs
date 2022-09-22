@@ -1,22 +1,18 @@
 using System;
 using System.Collections.Generic;
-/*Requerimiento 1.- Eliminar las dobles comillas del printf e interpretar las secuencias
-                    dentro de la cadena
-  Requerimiento 2.- Marcar los errores sintancticos cuando la variable no exista
-                    -si la variable no existe declarar que no existe
-  Requerimiento 3.- Modificar el valor de la variable en la asignacion en el metodo de
-                    asiganacion.
-  Requerimiento 4.- Obtener el valor de la variable cuando se requiera y programar el metodo
-                    getValor.
-  Requerimiento 5.- Modificar el valor de la variable en el Scanf.
+/*Requerimiento 1.- Actualizar el dominante para variables en la expreción.  Si el dominante
+                    Ejemplo: float x;char y; y=x; Debe marcar error.
+  Requerimiento 2.- Actualizar el dominante para el casteo y el valor de la subexpresion.
+                    char x; x=(char)(255+1); esto es lo que tiene que salir x=0;
+  Requerimiento 3.- Programar un metodo de converción de una valor a un tipo de dato
+                    private float convert(valor float, string TipoDato){}
+                    Deberan usar el reciduo de la division %255, %65535
 */
 namespace Semantica
 {
 
     public class Lenguaje : Sintaxis
     {
-        //MINUSCULA PARA EVITAR QUE EXISTAN DOS Variables CON EL METODO VARIABLES
-        //NO SE PUEDE NOMBRAR AL IGUAL QUE UN METODO PREVIAMENTE PROGRAMADO 
         List<Variable> variables = new List<Variable>();
         Stack<float> stack = new Stack<float>();
         Variable.TipoDato dominante;
@@ -227,15 +223,15 @@ namespace Semantica
 
         private Variable.TipoDato evaluaNumero(float resultado)
         {
-            if (resultado%1 != 0)
+             if (resultado % 1 != 0)
             {
                 return Variable.TipoDato.Float;
             }
-            else if ( resultado <= 255)
+            if (resultado <= 255)
             {
                 return Variable.TipoDato.Char;
             }
-            else if ( resultado <= 65535)
+            else if (resultado == 65535)
             {
                 return Variable.TipoDato.Int;
             }
@@ -571,17 +567,48 @@ namespace Semantica
                 string nombreVariable = getContenido();
                 if (!existeVariable(nombreVariable))
                 {
-                    throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
+                    throw new Error("\nError la variable <" + getContenido() +
+                                    "> no existe en linea: "+linea, log);
                 }
                 log.Write(getContenido() + " ");
+                //REQUERIMIENTO 1_OBTENER EL TIPO DE DATO DE LA
                 stack.Push(getValor(getContenido()));
                 match(Tipos.Identificador);
             }
             else
             {
+                bool huboCasteo = false;
+                Variable.TipoDato casteo = Variable.TipoDato.Char;
                 match("(");
+                if(getClasificacion() == Tipos.TipoDato)
+                {
+                    huboCasteo = true;
+                    switch(getContenido())
+                    {
+                        case "char":
+                            casteo = Variable.TipoDato.Char; break;
+                        case "int":
+                            casteo = Variable.TipoDato.Int; break;
+                        case "float":
+                            casteo = Variable.TipoDato.Float; break;
+
+                    }
+                    match(Tipos.TipoDato);
+                    match(")");
+                    match("(");
+                } 
                 Expresion();
                 match(")");
+                if (huboCasteo)
+                {
+                    //REQUERIMIENTO -> 2: TIENE QUE ACTUALIZAR EL DOMINATE
+                    //SI HUBO CASTEO SACO UN ELEMENTO DEL STACK
+                    //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
+                    //Requerimiento -> 3 
+                    //EJEMPLO: SI EL CASTEO ES char Y EL POP REGRESA UN 256 EL VALOR
+                    //EQUIVALENTE EL CASTEO ES 0 
+                    //Y METO ESE VALOR AL STACK
+                }
             }
         }
     }
