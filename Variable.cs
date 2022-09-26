@@ -1,3 +1,5 @@
+//BRIONES ALMAGUER CINTHYA CRISTINA
+
 namespace Semantica
 {
     public class Variable

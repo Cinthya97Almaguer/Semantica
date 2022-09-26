@@ -1,4 +1,6 @@
-using System.IO;
+//BRIONES ALMAGUER CINTHYA CRISTINA
+using 
+System.IO;
 
 namespace Semantica
 {
