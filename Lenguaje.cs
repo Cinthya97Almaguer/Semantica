@@ -7,6 +7,10 @@ using System.Collections.Generic;
   Requerimiento 3.- Programar un metodo de converción de una valor a un tipo de dato
                     private float convert(valor float, string TipoDato){}
                     Deberan usar el reciduo de la division %255, %65535
+  Requerimiento 4.- Evaluar nuevamente la condicion del If - else, while, For, Do while con 
+                    respecto al parametro que reciba
+  Requerimiento 5.- Levantar la excepcion cunado la captura no sea un numero
+  Requerimiento 6.- Ejecutar el For();
 */
 namespace Semantica
 {
@@ -50,10 +54,8 @@ namespace Semantica
             return false;
         }
 
-        //modificavariable
         private void modVariable (string nombre, float nuevoValor)
         {
-            //SE GENERA CON UN FOREACH 
             foreach (Variable v in variables)
             {
                 if (v.getNombre().Equals(nombre))
@@ -231,9 +233,12 @@ namespace Semantica
             {
                 return Variable.TipoDato.Char;
             }
-            else if (resultado == 65535)
+            else 
             {
-                return Variable.TipoDato.Int;
+                if (resultado == 65535)
+                {
+                    return Variable.TipoDato.Int;
+                }
             }
             return Variable.TipoDato.Float;
         }
@@ -241,7 +246,6 @@ namespace Semantica
         private bool evaluaSemantica(string variable, float resultado)
         {
             Variable.TipoDato tipoDato = getTipo(variable);
-
             return false;
         }
 
@@ -249,13 +253,14 @@ namespace Semantica
         //Asignacion -> identificador = cadena | Expresion;
         private void Asignacion(bool evaluacion)
         {
-            log.WriteLine();
-            log.Write(getContenido()+" = ");
             string nombreVariable = getContenido();
             if (!existeVariable(nombreVariable))
             {
                 throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
             }
+            log.WriteLine();
+            log.Write(getContenido()+" = ");
+            string nombre = getContenido();
             match(Tipos.Identificador);             
             match(Tipos.Asignacion);
             Dominante = Variable.TipoDato.Char;
@@ -264,17 +269,17 @@ namespace Semantica
             float resultado = stack.Pop();
             log.Write("= " + resultado);
             log.WriteLine();
-            Console.WriteLine(Dominante);
-            Console.WriteLine(evaluaNumero(resultado));
+            //Console.WriteLine(Dominante);
+            //Console.WriteLine(evaluaNumero(resultado));
             if (Dominante < evaluaNumero(resultado))
             {
                 Dominante = evaluaNumero(resultado);
             }
-            if (Dominante <= getTipo(nombreVariable))
+            if (Dominante <= getTipo(nombre))
             {
                 if (evaluacion)
                 {
-                    modVariable(nombreVariable, resultado);
+                    modVariable(nombre, resultado);
                 }
                 
             }
@@ -326,18 +331,28 @@ namespace Semantica
             match("for");
             match("(");
             Asignacion(evaluacion);
-            Condicion();
-            match(";");
-            Incremento(evaluacion);
-            match(")");
-            if (getContenido() == "{")
-            {
-                BloqueInstrucciones(evaluacion);  
-            }
-            else
-            {
-                Instruccion(evaluacion);
-            }
+            //REQUERIMIENTO 4
+
+            //REQUERIMIENTO 6
+            //a) Guardar la posicion del archivo de texto
+            bool validarFor=Condicion();
+            //b) Agregar un ciclo while
+            //while()
+            //{
+                match(";");
+                Incremento(evaluacion);
+                match(")");
+                if (getContenido() == "{")
+                {
+                    BloqueInstrucciones(evaluacion);  
+                }
+                else
+                {
+                    Instruccion(evaluacion);
+                }
+                // c) Regresar a la posicion de lectura del archivo
+                // d) Sacar otro token
+            //}
         }
 
         //Incremento -> Identificador ++ | --
@@ -351,19 +366,19 @@ namespace Semantica
             match(Tipos.Identificador);
             if(getContenido() == "++")
             {
-                match("++");
                 if (evaluacion)
                 {
                     modVariable(variable, getValor(variable)+1);
                 }
+                match("++");
             }
             else
             {
-                match("--");
                 if(evaluacion)
                 {
                     modVariable(variable, getValor(variable)-1);
                 }
+                match("--");
             }
         }
 
@@ -425,14 +440,14 @@ namespace Semantica
             {
                 case "==":
                     return e1 == e2;
-                case "<":
-                    return e1 < e2;
                 case ">":
                     return e1 > e2;
-                case "<=":
-                    return e1 <= e2;
                 case ">=":
                     return e1 >= e2;
+                case "<":
+                    return e1 < e2;
+                case "<=":
+                    return e1 <= e2;
                 default:
                     return e1 != e2;
             }
@@ -443,9 +458,9 @@ namespace Semantica
         {
             match("if");
             match("(");
+            //REQUERIMIENTO 4
             bool validarIF = Condicion();
             //Console.WriteLine(Condicion());
-            
             match(")");
             if (getContenido() == "{")
             {
@@ -453,7 +468,7 @@ namespace Semantica
             }
             else
             {
-                Instruccion(evaluacion);
+                Instruccion(validarIF);
             }
             if (getContenido() == "else")
             {
@@ -476,12 +491,10 @@ namespace Semantica
             match("(");
             if (getClasificacion() == Tipos.Cadena)
             {
-                
-                if (evaluacion)
-                {
-                    setContenido(getContenido().Replace("\"", ""));
-                    setContenido(getContenido().Replace("\\n","\n"));
-                    setContenido(getContenido().Replace("\\t","\t"));
+                setContenido(getContenido().Replace("\"", ""));
+                setContenido(getContenido().Replace("\\n", "\n"));
+                setContenido(getContenido().Replace("\\t", "     "));
+                if (evaluacion){
                     Console.Write(getContenido());
                 }
                 match(Tipos.Cadena);
@@ -512,9 +525,14 @@ namespace Semantica
             {
                 throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
             }
-            string val = ""+Console.ReadLine();
-            float valf = Convert.ToSingle(val);
-            modVariable(nombreVariable, (valf));
+            if (evaluacion)
+            {
+                string val = "" + Console.ReadLine();
+                //Hacemos el parseo de val, de string a float, para poder utilizarlo en el metodo modVariable
+                //Requerimiento 5
+                float nuevaVal = float.Parse(val);
+                modVariable(nombreVariable, nuevaVal);
+            }
             match(Tipos.Identificador);
             match(")");
             match(";");
@@ -602,13 +620,17 @@ namespace Semantica
             else if (getClasificacion() == Tipos.Identificador)
             {
                 string nombreVariable = getContenido();
-                if (!existeVariable(nombreVariable))
+                if (existeVariable(nombreVariable) != true)
                 {
                     throw new Error("\nError la variable <" + getContenido() +
                                     "> no existe en linea: "+linea, log);
                 }
                 log.Write(getContenido() + " ");
                 //REQUERIMIENTO 1_OBTENER EL TIPO DE DATO DE LA
+                if (Dominante  < getTipo(getContenido()))
+                {
+                    Dominante = getTipo(getContenido());
+                }
                 stack.Push(getValor(getContenido()));
                 match(Tipos.Identificador);
             }
