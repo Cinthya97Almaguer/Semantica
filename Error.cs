@@ -1,6 +1,4 @@
 //BRIONES ALMAGUER CINTHYA CRISTINA
-
-
 using System;
 using System.IO;
 
@@ -10,7 +8,6 @@ namespace Semantica
     {
         public Error(string mensaje, StreamWriter log) : base(mensaje)
         {
-            //Console.WriteLine(mensaje);
             log.WriteLine(mensaje);
         }
     }
