@@ -604,6 +604,24 @@ namespace Semantica
                 }
             }
         }
+
+        //REQUERIMIENTO 3
+        private float ValorCasteado(float N1, Variable.TipoDato casteo)
+        {
+            if (casteo == Variable.TipoDato.Char)
+            {
+                //CHAR
+                return N1 % 255; 
+            }
+            else if (casteo == Variable.TipoDato.Int)
+            {
+                //INT
+                return N1 % 65535;     
+            }
+            // FLOAT
+            return N1; 
+        }
+
         //Factor -> numero | identificador | (Expresion)
         private void Factor()
         {
@@ -660,13 +678,16 @@ namespace Semantica
                 match(")");
                 if (huboCasteo)
                 {
-                    //REQUERIMIENTO -> 2: TIENE QUE ACTUALIZAR EL DOMINATE
+                    //REQUERIMIENTO 2 ->: TIENE QUE ACTUALIZAR EL DOMINATE
                     //SI HUBO CASTEO SACO UN ELEMENTO DEL STACK
                     //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
-                    //Requerimiento -> 3 
+                    //Requerimiento 3 -> 
                     //EJEMPLO: SI EL CASTEO ES char Y EL POP REGRESA UN 256 EL VALOR
                     //EQUIVALENTE EL CASTEO ES 0 
                     //Y METO ESE VALOR AL STACK
+                    float N1 = stack.Pop();
+                    stack.Push(ValorCasteado(N1,casteo));
+                    Dominante = casteo;
                 }
             }
         }
