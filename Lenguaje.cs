@@ -681,13 +681,14 @@ namespace Semantica
                     //REQUERIMIENTO 2 ->: TIENE QUE ACTUALIZAR EL DOMINATE
                     //SI HUBO CASTEO SACO UN ELEMENTO DEL STACK
                     //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
+                    float N1 = stack.Pop();
+                    stack.Push(ValorCasteado(N1,casteo));
+                    Dominante = casteo;
                     //Requerimiento 3 -> 
                     //EJEMPLO: SI EL CASTEO ES char Y EL POP REGRESA UN 256 EL VALOR
                     //EQUIVALENTE EL CASTEO ES 0 
                     //Y METO ESE VALOR AL STACK
-                    float N1 = stack.Pop();
-                    stack.Push(ValorCasteado(N1,casteo));
-                    Dominante = casteo;
+                    
                 }
             }
         }
