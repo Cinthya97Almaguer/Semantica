@@ -608,18 +608,23 @@ namespace Semantica
         //REQUERIMIENTO 3
         private float ValorCasteado(float N1, Variable.TipoDato casteo)
         {
-            if (casteo == Variable.TipoDato.Char)
+            if (N1 > 255 && Dominante != Variable.TipoDato.Char)
             {
-                //CHAR
-                return N1 % 255; 
+                N1 = N1 % 256;
+                return N1;
             }
-            else if (casteo == Variable.TipoDato.Int)
+            else
             {
-                //INT
-                return N1 % 65535;     
-            }
-            // FLOAT
-            return N1; 
+                if (N1 > 65535 && Dominante != Variable.TipoDato.Int)
+                {
+                    N1 = N1 % 65536;
+                    return N1;
+                }
+                else
+                {
+                    return N1;
+                }
+            } 
         }
 
         //Factor -> numero | identificador | (Expresion)
@@ -681,9 +686,17 @@ namespace Semantica
                     //REQUERIMIENTO 2 ->: TIENE QUE ACTUALIZAR EL DOMINATE
                     //SI HUBO CASTEO SACO UN ELEMENTO DEL STACK
                     //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
-                    float N1 = stack.Pop();
-                    stack.Push(ValorCasteado(N1,casteo));
+                    //float N1 = stack.Pop();
+                    //stack.Push(ValorCasteado(N1,casteo));
+                    //Dominante = casteo;
                     Dominante = casteo;
+                    float valorGuardado = stack.Pop();
+                     if ((valorGuardado % 1) != 0 && Dominante != Variable.TipoDato.Float)
+                    {
+                        valorGuardado = (float)MathF.Truncate(valorGuardado);
+                    }
+                    valorGuardado = ValorCasteado(valorGuardado, Dominante);
+                    stack.Push(valorGuardado);
                     //Requerimiento 3 -> 
                     //EJEMPLO: SI EL CASTEO ES char Y EL POP REGRESA UN 256 EL VALOR
                     //EQUIVALENTE EL CASTEO ES 0 
