@@ -1,10 +1,6 @@
 Archivo: prueba.cpp
-06/10/2022 09:45:56 a. m.
+09/10/2022 12:35:47 a. m.
+altura 2 
+i = altura = 3.14
 
-i = altura = 1
-i 0 
-j = 0 = 0
-j altura i - j 2 1 1 2 2 
-a = 256 = 256
-
-Error de semantica no podemos asignar un  <Float> a un Int en la linea 34
+Error de semantica no podemos asignar un  <Float> a un Int en la linea 16
