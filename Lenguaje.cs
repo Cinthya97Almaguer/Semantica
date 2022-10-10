@@ -344,23 +344,26 @@ namespace Semantica
             Asignacion(evaluacion);
             //REQUERIMIENTO 4
             bool validarFor = Condicion();
+            if (evaluacion == false){
+                validarFor = false;
+            }
             //REQUERIMIENTO 6
             //a) Guardar la posicion del archivo de texto
             //bool validarFor=Condicion();
             //b) Agregar un ciclo while
             //while()
             //{
-                match(";");
-                Incremento(evaluacion);
-                match(")");
-                if (getContenido() == "{")
-                {
-                    BloqueInstrucciones(evaluacion);  
-                }
-                else
-                {
-                    Instruccion(evaluacion);
-                }
+            match(";");
+            Incremento(validarFor);
+            match(")");
+            if (getContenido() == "{")
+            {
+                BloqueInstrucciones(validarFor);
+            }
+            else
+            {
+                Instruccion(validarFor);
+            }
                 // c) Regresar a la posicion de lectura del archivo
                 // d) Sacar otro token
             //}
@@ -372,7 +375,8 @@ namespace Semantica
             string variable = getContenido();
             if (!existeVariable(variable))
             {
-                throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
+                throw new Error("\nError la variable <" + getContenido() + 
+                                    "> no existe en linea: "+linea, log);
             }
             match(Tipos.Identificador);
             if(getContenido() == "++")
@@ -471,7 +475,6 @@ namespace Semantica
             match("(");
             //REQUERIMIENTO 4
             bool validarIF = Condicion();
-            //Console.WriteLine(Condicion());
             if (evaluacion == false)
             {
                 validarIF = false;
@@ -678,7 +681,7 @@ namespace Semantica
                                     "> no existe en linea: "+linea, log);
                 }
                 log.Write(getContenido() + " ");
-                //REQUERIMIENTO 1_OBTENER EL TIPO DE DATO DE LA
+                //REQUERIMIENTO 1_OBTENER EL TIPO DE DATO
                 if (Dominante  < getTipo(getContenido()))
                 {
                     Dominante = getTipo(getContenido());
@@ -719,8 +722,10 @@ namespace Semantica
                     //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
                     Dominante = casteo;
                     float valorGuardado = stack.Pop();
-                     if ((valorGuardado % 1) != 0 && Dominante != Variable.TipoDato.Float)
+                    if ((valorGuardado % 1) != 0 && Dominante != Variable.TipoDato.Float)
                     {
+                        //public static float Truncate (float x);
+                        //x: Es el número especificado que se truncará
                         valorGuardado = (float)MathF.Truncate(valorGuardado);
                     }
                     valorGuardado = Convertir(valorGuardado, Dominante);
