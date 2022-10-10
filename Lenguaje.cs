@@ -229,13 +229,13 @@ namespace Semantica
             {
                 return Variable.TipoDato.Float;
             }
-            if (resultado <= 255)
+            if (resultado <= 256)
             {
                 return Variable.TipoDato.Char;
             }
             else
             {
-                if (resultado <= 65535)
+                if (resultado <= 65536)
                 {
                     return Variable.TipoDato.Int;
                 }
@@ -260,7 +260,6 @@ namespace Semantica
             }
             log.WriteLine();
             log.Write(getContenido()+" = ");
-            string nombre = getContenido();
             match(Tipos.Identificador);             
             match(Tipos.Asignacion);
             Dominante = Variable.TipoDato.Char;
@@ -273,11 +272,11 @@ namespace Semantica
             {
                 Dominante = evaluaNumero(resultado);
             }
-            if (Dominante <= getTipo(nombre))
+            if (Dominante <= getTipo(nombreVariable))
             {
                 if (evaluacion)
                 {
-                    modVariable(nombre, resultado);
+                    modVariable(nombreVariable, resultado);
                 }
             }
             else
@@ -537,7 +536,7 @@ namespace Semantica
                 float resultado = stack.Pop();
                 if (evaluacion)
                 {
-                    Console.Write(stack.Pop());
+                    Console.Write(resultado);
                 }
             }
             match(")");
@@ -640,23 +639,18 @@ namespace Semantica
         //REQUERIMIENTO 3
         private float Convertir(float valor, Variable.TipoDato casteo)
         {
-            if (valor > 255 && Dominante != Variable.TipoDato.Char)
+            if (casteo == Variable.TipoDato.Char)
             {
                 valor = valor % 256;
                 return valor;
             }
-            else
+            if (casteo == Variable.TipoDato.Int)
             {
-                if (valor > 65535 && Dominante != Variable.TipoDato.Int)
-                {
-                    valor = valor % 65536;
-                    return valor;
-                }
-                else
-                {
-                    return valor;
-                }
-            }
+                valor = valor % 65536;
+                return valor;
+            } 
+            return valor;
+            
         }
 
         //Factor -> numero | identificador | (Expresion)
@@ -720,16 +714,17 @@ namespace Semantica
                     //REQUERIMIENTO 2 ->: TIENE QUE ACTUALIZAR EL DOMINATE
                     //SI HUBO CASTEO SACO UN ELEMENTO DEL STACK
                     //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
-                    Dominante = casteo;
+                    //Dominante = casteo;
                     float valorGuardado = stack.Pop();
-                    if ((valorGuardado % 1) != 0 && Dominante != Variable.TipoDato.Float)
+                    /*if ((valorGuardado % 1) != 0 && Dominante != Variable.TipoDato.Float)
                     {
                         //public static float Truncate (float x);
                         //x: Es el número especificado que se truncará
                         valorGuardado = (float)MathF.Truncate(valorGuardado);
-                    }
-                    valorGuardado = Convertir(valorGuardado, Dominante);
+                    }*/
+                    valorGuardado = Convertir(valorGuardado, casteo);
                     stack.Push(valorGuardado);
+                    Dominante = casteo;
                     //Requerimiento 3 -> 
                     //EJEMPLO: SI EL CASTEO ES char Y EL POP REGRESA UN 256 EL VALOR
                     //EQUIVALENTE EL CASTEO ES 0 
