@@ -716,12 +716,6 @@ namespace Semantica
                     //CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
                     //Dominante = casteo;
                     float valorGuardado = stack.Pop();
-                    /*if ((valorGuardado % 1) != 0 && Dominante != Variable.TipoDato.Float)
-                    {
-                        //public static float Truncate (float x);
-                        //x: Es el número especificado que se truncará
-                        valorGuardado = (float)MathF.Truncate(valorGuardado);
-                    }*/
                     valorGuardado = Convertir(valorGuardado, casteo);
                     stack.Push(valorGuardado);
                     Dominante = casteo;
