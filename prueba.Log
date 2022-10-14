@@ -1,8 +1,14 @@
 Archivo: prueba.cpp
-13/10/2022 06:24:23 p. m.
+14/10/2022 12:34:08 a. m.
 altura 2 
 i = altura = 3
 i 0 
+j = 0 = 0
+j altura i - j 2 j altura i - j 2 i 0 
+j = 0 = 0
+j altura i - j 2 j altura i - j 2 j altura i - j 2 i 0 
+j = 0 = 0
+j altura i - j 2 j altura i - j 2 j altura i - j 2 j altura i - j 2 i 0 
 j = 0 = 0
 j altura i - j 2 1 1 2 2 
 a = 256 = 256
@@ -11,4 +17,4 @@ y = a = 0
 y 
 y = a = 256
 
-Error de semantica no podemos asignar un  <Int> a un Char en la linea 44
+Error de semantica no podemos asignar un  < Int > a un Char en la linea 44
