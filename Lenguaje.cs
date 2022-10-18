@@ -1,17 +1,15 @@
 //BRIONES ALMAGUER CINTHYA CRISTINA
 using System;
 using System.Collections.Generic;
-/*Requerimiento 1.- Actualizar el dominante para variables en la expreción.
-                    Ejemplo: float x;char y; y=x; Debe marcar error.
-  Requerimiento 2.- Actualizar el dominante para el casteo y el valor de la subexpresion.
-                    char x; x=(char)(255+1); esto es lo que tiene que salir x=0;
-  Requerimiento 3.- Programar un metodo de converción de una valor a un tipo de dato
-                    private float convert(valor float, string TipoDato){}
-                    Deberan usar el reciduo de la division %255, %65535
-  Requerimiento 4.- Evaluar nuevamente la condicion del If - else, while, For, Do while con 
-                    respecto al parametro que reciba
-  Requerimiento 5.- Levantar la excepcion cunado la captura no sea un numero
-  Requerimiento 6.- Ejecutar el For();
+/*Requerimiento 1.- ACTUALIZACION:
+                    a) Agregar el residuo en la division en el porfactor 
+                    b) Agregar en Instruccion los incrementos de termino y factor 
+                       a++,a--,a+=1,a-=1,a*=1,a/=1;a%=1 [a+=(5+8)] 
+                       en donde el uno puede ser cualquier numero o una expresion
+                    c) Marcar errores semanticos cuando los incrementos de termino o de factor
+                       superen el rango de la variable char c=255, c++; error semantico
+                    d) Considerar el inciso b y c para el For.
+                    e) Funcione el Do y el While.
 */
 namespace Semantica
 {
@@ -261,29 +259,38 @@ namespace Semantica
             }
             log.WriteLine();
             log.Write(getContenido()+" = ");
-            match(Tipos.Identificador);             
-            match(Tipos.Asignacion);
+            match(Tipos.Identificador);  
             Dominante = Variable.TipoDato.Char;
-            Expresion();
-            match(";");
-            float resultado = stack.Pop();
-            log.Write("= " + resultado);
-            log.WriteLine();
-            if (Dominante < evaluaNumero(resultado))
+            if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
             {
-                Dominante = evaluaNumero(resultado);
-            }
-            if (Dominante <= getTipo(nombreVariable))
-            {
-                if (evaluacion)
-                {
-                    modVariable(nombreVariable, resultado);
-                }
-            }
+                //REQUERIMITNO 1.b)
+                //REQUERIMITNO 1.c)
+            }           
             else
             {
-                throw new Error("\nError de semantica no podemos asignar un  < "+ Dominante +" > a un "+ getTipo(nombreVariable)+" en la linea "+linea, log);
+                match(Tipos.Asignacion);
+                Expresion();
+                match(";");
+                float resultado = stack.Pop();
+                log.Write("= " + resultado);
+                log.WriteLine();
+                if (Dominante < evaluaNumero(resultado))
+                {
+                    Dominante = evaluaNumero(resultado);
+                }
+                if (Dominante <= getTipo(nombreVariable))
+                {
+                    if (evaluacion)
+                    {
+                        modVariable(nombreVariable, resultado);
+                    }
+                }
+                else
+                {
+                    throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(nombreVariable) + " en la linea " + linea, log);
+                }
             }
+            
         }
 
         //While -> while(Condicion) bloque de instrucciones | instruccion
@@ -291,25 +298,18 @@ namespace Semantica
         {
             match("while");
             match("(");
-//-*-*-*-*-*-*-*-*-*-*-*-*-REQUERIMIENTO 4-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-            //Condicion();
             bool validar = Condicion();
             if (evaluacion == false)
             {
-                //SI LA EVALUACION ES FALSA LA VALIDACION ES FALSA
                 validar = false;
             }
             match(")");
             if (getContenido() == "{") 
             {
-                //BloqueInstrucciones(evaluacion);
-                //PASAMOS VALIDAR QUE TIENE SI LA CONDICION ES V/F HACIA EL BLOQUE DE INSTRUCCIONES
                 BloqueInstrucciones(validar);
             }
             else
             {
-                //Instruccion(evaluacion);
-                //PASAMOS VALIDAR QUE TIENE SI LA CONDICION ES V/F HACIA EL BLOQUE DE INSTRUCCIONES
                 Instruccion(validar);
             }
         }
@@ -320,26 +320,19 @@ namespace Semantica
             bool validar = true;
             if (evaluacion == false)
             {
-                //SI LA EVALUACION ES FALSA LA VALIDACION ES FALSA
                 validar = false;
             }
             match("do");
             if (getContenido() == "{")
             {
-                //PASAMOS VALIDAR QUE TIENE SI LA CONDICION ES V/F HACIA EL BLOQUE DE INSTRUCCIONES
                 BloqueInstrucciones(validar);
             }
             else
             {
-                //PASAMOS VALIDAR QUE TIENE SI LA CONDICION ES V/F HACIA EL BLOQUE DE INSTRUCCIONES
                 Instruccion(validar);
             } 
             match("while");
             match("(");
-            /*
-            do
-            {}while(CONDICION);
-            */
             validar = Condicion();
             match(")");
             match(";");
@@ -352,32 +345,20 @@ namespace Semantica
             match("(");
             Asignacion(evaluacion);
             bool validar;
-            /*REQUERIMIENTO 4
-            bool validar = Condicion();
-            if (evaluacion == false)
-            //{
-                //SI LA EVALUACION ES FALSA LA VALIDACION ES FALSA
-              //  validar = false;
-            }*/
-//-*-*-*-*-*-*-*-*-*-*-*-*-REQUERIMIENTO 6-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-            //a) Guardar la posicion del archivo de texto
             int guardarPosicion = posicion;
             int guardarLinea = linea;
             int tamano = getContenido().Length;
-            //b) Agregar un ciclo while -*- SE AGREGA UN DO WHILE PARA HACER ALMENOS UNA VEZ
-            //while()
-            //{
             do
             {
-//-*-*-*-*-*-*-*-*-*-*-*-*-REQUERIMIENTO 4-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*                 
                 validar = Condicion();
                 if (evaluacion == false)
                 {
-                    //SI LA EVALUACION ES FALSA LA VALIDACION ES FALSA
                     validar = false;
                 }   
                 match(";");
+                //Incrementador = Incremento(validar)
                 Incremento(validar);
+                //REQUERIMIENTO 1.d
                 match(")");
                 if (getContenido() == "{")
                 {
@@ -389,15 +370,12 @@ namespace Semantica
                 }
                 if(validar == true)
                 {
-                    // c) Regresar a la posicion de lectura del archivo
                     posicion = guardarPosicion - tamano;
                     linea = guardarLinea;
                     restablecerPosicion(posicion);
-                    // d) Sacar otro token
                     NextToken();
                 }
             }while(validar);
-            //}
         }
 
         private void restablecerPosicion(int posicion)
@@ -512,11 +490,9 @@ namespace Semantica
         {
             match("if");
             match("(");
-//-*-*-*-*-*-*-*-*-*-*-*-*-REQUERIMIENTO 4-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
             bool validar = Condicion();
             if (evaluacion == false)
             {
-                //SI LA EVALUACION ES FALSA ENTONCE LA VALIDACION TAMBIEN ES FALSA
                 validar = false;
             }
             match(")");
@@ -531,12 +507,10 @@ namespace Semantica
             if (getContenido() == "else")
             {
                 match("else");
-                //EL ELSE SIGNIFICA SI NO ENTONCES VALIDAR ES LO CONTRARIO DEL IF
                 if (getContenido() == "{")
                 {
                     if (evaluacion == true)
                     {
-                        //SI LA EVALUCION ES VERDADERO LA PASAMOS AL CONTRARIO
                         BloqueInstrucciones(!validar);
                     }
                     else
@@ -602,10 +576,8 @@ namespace Semantica
             if (evaluacion)
             {
                 string val = "" + Console.ReadLine();
-//-*-*-*-*-*-*-*-*-*-*-*REQUERIMIENTO 5-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
                 try
                 {
-                    //Hacemos el parseo de val, de string a float, para poder utilizarlo en el metodo modVariable
                     float nuevaVal = float.Parse(val);
                     modVariable(nombreVariable, nuevaVal);
                 }
@@ -675,6 +647,7 @@ namespace Semantica
                 log.Write(operador + " ");
                 float n1 = stack.Pop();
                 float n2 = stack.Pop();
+                //REQUERIMIENTO 1.a
                 switch (operador)
                 {
                     case "*":
@@ -687,22 +660,18 @@ namespace Semantica
             }
         }
 
-//-*-*-*-*-*-*-*-*-*-*-*-*-REQUERIMIENTO 3-*-*-*-*-*-*-*-*-*-*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-
         private float Convertir(float valor, Variable.TipoDato casteo)
         {
             if (casteo == Variable.TipoDato.Char)
             {
-                //TIPO char
                 valor = valor % 256; 
                 return valor;
             }
             if (casteo == Variable.TipoDato.Int)
             {
-                //TIPO int
                 valor = valor % 65536;
                 return valor;
             } 
-            //SI NO ES FLOTANTE
             return valor;  
         }
 
@@ -728,10 +697,8 @@ namespace Semantica
                                     "> no existe en linea: "+linea, log);
                 }
                 log.Write(getContenido() + " ");
-                //REQUERIMIENTO 1_OBTENER EL TIPO DE DATO
                 if (Dominante  < getTipo(getContenido()))
                 {
-//*-*-*-*-*-*-*-*-*-*-*-ACTUALIZAR EL DOMINATE *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
                     Dominante = getTipo(getContenido());
                 }
                 stack.Push(getValor(getContenido()));
@@ -765,15 +732,9 @@ namespace Semantica
                 match(")");
                 if (huboCasteo)
                 {   
-                    //SI HUBO CASTEO SACO UN ELEMENTO DEL STACK
                     float valorCasteo = stack.Pop();
-                    //Requerimiento 3 -> METODO CONVERTIR - CONVIERTO ESE VALOR AL EQUIVALENTE EN CASTEO
                     valorCasteo = Convertir(valorCasteo, casteo);
-                    //REQUERIMIENTO 2 ->: TIENE QUE ACTUALIZAR EL DOMINATE
                     Dominante = casteo;
-                    //EJEMPLO: SI EL CASTEO ES char Y EL POP REGRESA UN 256 EL VALOR
-                    //EQUIVALENTE EL CASTEO ES 0 
-                    //Y METO ESE VALOR AL STACK
                     stack.Push(valorCasteo);
                 }
             }
