@@ -6,10 +6,17 @@ using System.Collections.Generic;
                     b) Agregar en Instruccion los incrementos de termino y factor 
                        a++,a--,a+=1,a-=1,a*=1,a/=1;a%=1 [a+=(5+8)] 
                        en donde el uno puede ser cualquier numero o una expresion
-                    c) Marcar errores semanticos cuando los incrementos de termino o de factor
+                    c) Programar el destructor para ejecutar el metodo cerrarArchivo 
+                       Existe una libreria especial para esto, trabajar en Lexico??
+                    
+    Requerimiento 2.- Actualizacion parte 2
+                    a) Marcar errores semanticos cuando los incrementos de termino o de factor
                        superen el rango de la variable char c=255, c++; error semantico
-                    d) Considerar el inciso b y c para el For.
-                    e) Funcione el Do y el While.
+                    b) Considerar el inciso b y c para el For.
+                    c) Funcione el Do y el While.
+    Requerimiento 3.- 
+                    a) Considerar las variables y los casteo de las expresiones matematicas
+                       en ensamblador
 */
 namespace Semantica
 {
@@ -27,6 +34,13 @@ namespace Semantica
         {
 
         }
+
+        ~Lenguaje()
+        {
+            Console.WriteLine("Destructor");
+            cerrar();
+        }
+
         //PASAMOS EL NOMBRE Y TIPO DE DATO Y QUE LO AGREGUE A LA LISTA
         private void addVariable(string nombre, Variable.TipoDato tipo)
         {
@@ -90,10 +104,16 @@ namespace Semantica
         //Programa  -> Librerias? Variables? Main
         public void Programa()
         {
+            asm.WriteLine("#make_COM");
+            asm.WriteLine("Include emu8086.Inc");
+            asm.WriteLine("ORG 100h");
             Libreria();
             Variables();
             Main();
             displayVariables();
+            asm.WriteLine("RET");
+            asm.WriteLine("END");
+            asm.WriteLine("PUS AX");
         }
 
         //Librerias -> #include<identificador(.h)?> Librerias?
@@ -272,6 +292,7 @@ namespace Semantica
                 Expresion();
                 match(";");
                 float resultado = stack.Pop();
+                asm.WriteLine("POP AX");
                 log.Write("= " + resultado);
                 log.WriteLine();
                 if (Dominante < evaluaNumero(resultado))
@@ -348,9 +369,9 @@ namespace Semantica
             int guardarPosicion = posicion;
             int guardarLinea = linea;
             int tamano = getContenido().Length;
+            validar = Condicion();
             do
             {
-                validar = Condicion();
                 if (evaluacion == false)
                 {
                     validar = false;
@@ -421,6 +442,7 @@ namespace Semantica
             match("(");
             Expresion();
             stack.Pop(); 
+            asm.WriteLine("POP AX");
             match(")");
             match("{");
             ListaDeCasos(evaluacion);
@@ -446,6 +468,7 @@ namespace Semantica
             match("case");
             Expresion();
             stack.Pop();
+            asm.WriteLine("POP AX");
             match(":");
             ListaInstruccionesCase(evaluacion);
             if(getContenido() == "break")
@@ -467,7 +490,9 @@ namespace Semantica
             match(Tipos.OperadorRelacional);
             Expresion();
             float e2 = stack.Pop();
+            asm.WriteLine("POP AX");
             float e1 = stack.Pop();
+            asm.WriteLine("POP BX");
             switch (operador)
             {
                 case "==":
@@ -551,6 +576,7 @@ namespace Semantica
             {
                 Expresion();
                 float resultado = stack.Pop();
+                asm.WriteLine("POP AX");
                 if (evaluacion)
                 {
                     Console.Write(resultado);
@@ -618,14 +644,20 @@ namespace Semantica
                 Termino();
                 log.Write(operador + " ");
                 float n1 = stack.Pop();
+                asm.WriteLine("POP AX");
                 float n2 = stack.Pop();
+                asm.WriteLine("POP BX");
                 switch (operador)
                 {
                     case "+":
                         stack.Push(n2 + n1);
+                        asm.WriteLine("ADD AX, BX");
+                        asm.WriteLine("PUSH AX");
                         break;
                     case "-":
                         stack.Push(n2 - n1);
+                        asm.WriteLine("SUB AX, BX");
+                        asm.WriteLine("PUSH AX");
                         break;
                 }
             }
@@ -646,15 +678,21 @@ namespace Semantica
                 Factor();
                 log.Write(operador + " ");
                 float n1 = stack.Pop();
+                asm.WriteLine("POP AX");
                 float n2 = stack.Pop();
+                asm.WriteLine("POP BX");
                 //REQUERIMIENTO 1.a
                 switch (operador)
                 {
                     case "*":
                         stack.Push(n2 * n1);
+                        asm.WriteLine("MUL BX");
+                        asm.WriteLine("PUSH AX");
                         break;
                     case "/":
                         stack.Push(n2 / n1);
+                        asm.WriteLine("DIV BX");
+                        asm.WriteLine("PUSH AX");
                         break;
                 }
             }
@@ -686,6 +724,8 @@ namespace Semantica
                     Dominante = evaluaNumero(float.Parse(getContenido()));
                 }
                 stack.Push(float.Parse(getContenido()));
+                asm.WriteLine("MOV AX,"+getContenido());
+                asm.WriteLine("PUS AX");
                 match(Tipos.Numero);
             }
             else if (getClasificacion() == Tipos.Identificador)
@@ -733,6 +773,7 @@ namespace Semantica
                 if (huboCasteo)
                 {   
                     float valorCasteo = stack.Pop();
+                    asm.WriteLine("POP AX");
                     valorCasteo = Convertir(valorCasteo, casteo);
                     Dominante = casteo;
                     stack.Push(valorCasteo);

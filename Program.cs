@@ -22,12 +22,12 @@ namespace Semantica
                 a.match(Token.Tipos.Identificador);
                 a.match(".");
                 a.match("h");
-                a.match(">"); */
+                a.match(">"); 
                 
-                //while(!a.FinArchivo())
-                //{
-                  //  a.NextToken();
-                //}
+                while(!a.FinArchivo())
+                {
+                    a.NextToken();
+                }*/
                 a.cerrar();
             }
             catch (Exception e)

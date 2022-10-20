@@ -5,12 +5,15 @@
 float area, radio, pi, resultado;
 int a, d, altura;
 float x;
-char y;int i ;int j;
+char y; int i ;int j;
 // Este programa calcula el volumen de un cilindro.
-void main(){
-    y = 255;
+void main()
+{
+    y = (3+5)*8-(10-4)/2;
+    /*y = 255;
     y++;//GENERAR ERROR SINTACTICO
     y+=2;
+
     //Requerimiento 5.- Levanta una excepcion en el scanf si la captura no es un numero
     printf("Introduce la altura de la piramide: ");
     scanf("altura", &altura);
@@ -48,5 +51,5 @@ void main(){
     printf("\nValor de variable char y despues del casteo de a: ");
     printf(y);
     printf("\nA continuacion se intenta asignar un int a un char sin usar casteo: \n");
-    y = a; //Requerimiento 1.- debe marcar error
+    y = a; //Requerimiento 1.- debe marcar error*/
 }
