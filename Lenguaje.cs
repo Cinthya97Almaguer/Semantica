@@ -17,6 +17,7 @@ using System.Collections.Generic;
     Requerimiento 3.- 
                     a) Considerar las variables y los casteo de las expresiones matematicas
                        en ensamblador
+                    b) Considerar el residuo de la division en ensamblador
 */
 namespace Semantica
 {
@@ -54,6 +55,16 @@ namespace Semantica
             foreach (Variable v in variables)
             {
                 log.WriteLine(v.getNombre() + " " + v.getTipoDato() + " " + v.getValor());
+            }
+        }
+
+        private void Variablesasm( )
+        {
+            asm.WriteLine();
+            asm.WriteLine(";Variables: ");
+            foreach (Variable v in variables)
+            {
+                asm.WriteLine("\t"+v.getNombre() + " DW ?" ); //+ v.getTipoDato() + " " + v.getValor());
             }
         }
 
@@ -109,11 +120,12 @@ namespace Semantica
             asm.WriteLine("ORG 100h");
             Libreria();
             Variables();
+            Variablesasm();
             Main();
             displayVariables();
             asm.WriteLine("RET");
             asm.WriteLine("END");
-            asm.WriteLine("PUS AX");
+            asm.WriteLine("PUSH AX");
         }
 
         //Librerias -> #include<identificador(.h)?> Librerias?
@@ -304,6 +316,8 @@ namespace Semantica
                     if (evaluacion)
                     {
                         modVariable(nombreVariable, resultado);
+                        //MODIFICACION EN ENSAMBLADOR
+                        asm.WriteLine("MOV "+nombreVariable+" , AX");
                     }
                 }
                 else
@@ -644,9 +658,9 @@ namespace Semantica
                 Termino();
                 log.Write(operador + " ");
                 float n1 = stack.Pop();
-                asm.WriteLine("POP AX");
-                float n2 = stack.Pop();
                 asm.WriteLine("POP BX");
+                float n2 = stack.Pop();
+                asm.WriteLine("POP AX");
                 switch (operador)
                 {
                     case "+":
@@ -678,9 +692,9 @@ namespace Semantica
                 Factor();
                 log.Write(operador + " ");
                 float n1 = stack.Pop();
-                asm.WriteLine("POP AX");
-                float n2 = stack.Pop();
                 asm.WriteLine("POP BX");
+                float n2 = stack.Pop();
+                asm.WriteLine("POP AX");
                 //REQUERIMIENTO 1.a
                 switch (operador)
                 {
@@ -691,9 +705,12 @@ namespace Semantica
                         break;
                     case "/":
                         stack.Push(n2 / n1);
+                        //DIVIDE LO QUE HAY EN AX ENTRE BX
+                        //EL RESIDUO DE LA DIVISION SE QUEDA EN DX
                         asm.WriteLine("DIV BX");
                         asm.WriteLine("PUSH AX");
                         break;
+                    //case "%":
                 }
             }
         }
@@ -725,7 +742,7 @@ namespace Semantica
                 }
                 stack.Push(float.Parse(getContenido()));
                 asm.WriteLine("MOV AX,"+getContenido());
-                asm.WriteLine("PUS AX");
+                asm.WriteLine("PUSH AX");
                 match(Tipos.Numero);
             }
             else if (getClasificacion() == Tipos.Identificador)
