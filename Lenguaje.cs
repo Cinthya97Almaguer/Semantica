@@ -18,6 +18,13 @@ using System.Collections.Generic;
                     a) Considerar las variables y los casteo de las expresiones matematicas
                        en ensamblador
                     b) Considerar el residuo de la division en ensamblador
+                    c) Programar el Printf y el Scanf en ensamblador
+    Requerimiento 4.-                 
+                    a)  Programar el else en ensamblador
+                    b) Programar el for en ensamblador
+    Requerimiento 5.-                 
+                    a) Programar el while en ensamblador
+                    b) Programar el do() while en ensamblador
 */
 namespace Semantica
 {
@@ -27,13 +34,14 @@ namespace Semantica
         List<Variable> variables = new List<Variable>();
         Stack<float> stack = new Stack<float>();
         Variable.TipoDato Dominante;
+        int cIf, cFor;
         public Lenguaje()
         {
-
+            cIf = cFor = 0;
         }
         public Lenguaje(string nombre) : base(nombre)
         {
-
+            cIf = cFor = 0;
         }
 
         ~Lenguaje()
@@ -115,7 +123,7 @@ namespace Semantica
         //Programa  -> Librerias? Variables? Main
         public void Programa()
         {
-            asm.WriteLine("#make_COM");
+            asm.WriteLine("#make_COM#");
             asm.WriteLine("Include emu8086.Inc");
             asm.WriteLine("ORG 100h");
             Libreria();
@@ -324,8 +332,8 @@ namespace Semantica
                 {
                     throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(nombreVariable) + " en la linea " + linea, log);
                 }
+                asm.WriteLine("MOV"+nombreVariable+"AX");
             }
-            
         }
 
         //While -> while(Condicion) bloque de instrucciones | instruccion
@@ -333,7 +341,7 @@ namespace Semantica
         {
             match("while");
             match("(");
-            bool validar = Condicion();
+            bool validar = Condicion("");
             if (evaluacion == false)
             {
                 validar = false;
@@ -368,7 +376,7 @@ namespace Semantica
             } 
             match("while");
             match("(");
-            validar = Condicion();
+            validar = Condicion("");
             match(")");
             match(";");
         }
@@ -376,6 +384,9 @@ namespace Semantica
         //For -> for(Asignacion Condicion; Incremento) BloqueInstruccones | Intruccion 
         private void For(bool evaluacion)
         {
+            string etiquetaInicioFor = "inicioFor" + cFor;
+            string etiquetaFinFor = "finFor" + ++cFor;
+            asm.WriteLine(etiquetaInicioFor + ":");
             match("for");
             match("(");
             Asignacion(evaluacion);
@@ -383,7 +394,7 @@ namespace Semantica
             int guardarPosicion = posicion;
             int guardarLinea = linea;
             int tamano = getContenido().Length;
-            validar = Condicion();
+            validar = Condicion("");
             do
             {
                 if (evaluacion == false)
@@ -411,6 +422,7 @@ namespace Semantica
                     NextToken();
                 }
             }while(validar);
+            asm.WriteLine(etiquetaFinFor + ":");
         }
 
         private void restablecerPosicion(int posicion)
@@ -497,7 +509,7 @@ namespace Semantica
         }
 
         //Condicion -> Expresion operador relacional Expresion
-        private bool Condicion()
+        private bool Condicion(string etiqueta)
         {
             Expresion();
             string operador = getContenido();
@@ -507,19 +519,26 @@ namespace Semantica
             asm.WriteLine("POP AX");
             float e1 = stack.Pop();
             asm.WriteLine("POP BX");
+            asm.WriteLine("COMP AX, BX");
             switch (operador)
             {
                 case "==":
+                    asm.WriteLine("JNE "+etiqueta);
                     return e1 == e2;
                 case ">":
+                    asm.WriteLine("JLE "+etiqueta);
                     return e1 > e2;
                 case ">=":
+                    asm.WriteLine("JL "+etiqueta);
                     return e1 >= e2;
                 case "<":
+                    asm.WriteLine("JGE "+etiqueta);
                     return e1 < e2;
                 case "<=":
+                    asm.WriteLine("JG "+etiqueta);
                     return e1 <= e2;
                 default:
+                    asm.WriteLine("JE "+ etiqueta);
                     return e1 != e2;
             }
         }
@@ -527,9 +546,10 @@ namespace Semantica
         //If -> if(Condicion) bloque de instrucciones (else bloque de instrucciones)?
         private void If(bool evaluacion)
         {
+            string etiquetaIf = "if" + ++cIf;
             match("if");
             match("(");
-            bool validar = Condicion();
+            bool validar = Condicion(etiquetaIf);
             if (evaluacion == false)
             {
                 validar = false;
@@ -569,6 +589,7 @@ namespace Semantica
                     }
                 }
             }
+            asm.WriteLine(etiquetaIf + ":");
         }
 
         //Printf -> printf(cadena o expreción);
@@ -741,7 +762,7 @@ namespace Semantica
                     Dominante = evaluaNumero(float.Parse(getContenido()));
                 }
                 stack.Push(float.Parse(getContenido()));
-                asm.WriteLine("MOV AX,"+getContenido());
+                asm.WriteLine("MOV AX, "+getContenido());
                 asm.WriteLine("PUSH AX");
                 match(Tipos.Numero);
             }
@@ -759,6 +780,7 @@ namespace Semantica
                     Dominante = getTipo(getContenido());
                 }
                 stack.Push(getValor(getContenido()));
+                //REQUERIMIENTO 3
                 match(Tipos.Identificador);
             }
             else
