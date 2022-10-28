@@ -1,5 +1,5 @@
 ;Archivo: prueba.cpp
-;Fecha 27/10/2022 08:56:39 p. m.
+;Fecha 28/10/2022 09:49:00 a. m.
 #make_COM#
 Include emu8086.Inc
 ORG 100h
@@ -16,15 +16,9 @@ ORG 100h
 	y DW ?
 	i DW ?
 	j DW ?
-inicioFor0:
-MOV AX, 0
-PUSH AX
-POP AX
-MOV i , AX
-MOViAX
-MOV AX, 1
-PUSH AX
-POP AX
-POP BX
-COMP AX, BX
-JGE 
+PRINTN "Ingresa el radio del circulo"
+CALL scan_num
+MOV radio, CX
+RET
+DEFINE_SCAN_NUM
+END

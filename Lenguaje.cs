@@ -25,6 +25,7 @@ using System.Collections.Generic;
     Requerimiento 5.-                 
                     a) Programar el while en ensamblador
                     b) Programar el do() while en ensamblador
+
 */
 namespace Semantica
 {
@@ -132,8 +133,8 @@ namespace Semantica
             Main();
             displayVariables();
             asm.WriteLine("RET");
+            asm.WriteLine("DEFINE_SCAN_NUM");
             asm.WriteLine("END");
-            asm.WriteLine("PUSH AX");
         }
 
         //Librerias -> #include<identificador(.h)?> Librerias?
@@ -605,6 +606,7 @@ namespace Semantica
                 if (evaluacion){
                     Console.Write(getContenido());
                 }
+                asm.WriteLine("PRINTN \""+getContenido()+"\"");
                 match(Tipos.Cadena);
             }
             else
@@ -614,6 +616,7 @@ namespace Semantica
                 asm.WriteLine("POP AX");
                 if (evaluacion)
                 {
+                    //REQUERIMIENTO DE PRINTF CODIGO ENSAMBLADOR PARA IMPRIMIR UNA VARIABLE
                     Console.Write(resultado);
                 }
             }
@@ -646,6 +649,8 @@ namespace Semantica
                 {
                     throw new Error("ERROR no se puede asignar <"+ getContenido() +">  en linea: "+linea, log);
                 }
+                asm.WriteLine("CALL scan_num");
+                asm.WriteLine("MOV " + getContenido() + ", CX");
                 
             }
             match(Tipos.Identificador);
