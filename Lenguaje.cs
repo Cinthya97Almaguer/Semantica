@@ -27,6 +27,7 @@ using System.Collections.Generic;
                     b) Programar el do() while en ensamblador
 
 */
+
 namespace Semantica
 {
 
@@ -44,6 +45,8 @@ namespace Semantica
         {
             cIf = cFor = 0;
         }
+
+
 
         ~Lenguaje()
         {
@@ -736,7 +739,11 @@ namespace Semantica
                         asm.WriteLine("DIV BX");
                         asm.WriteLine("PUSH AX");
                         break;
-                    //case "%":
+                    case "%":
+                        stack.Push(n2 % n1);
+                        asm.WriteLine("DIV BX");
+                        asm.WriteLine("PUSH DX");
+                        break;
                 }
             }
         }
