@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 /*Requerimiento 1.- ACTUALIZACION:
-                    a) Agregar el residuo en la division en el porfactor 
-                    b) Agregar en Instruccion los incrementos de termino y factor 
+X                   a) Agregar el residuo en la division en el porfactor 
+X                   b) Agregar en Instruccion los incrementos de termino y factor 
                        a++,a--,a+=1,a-=1,a*=1,a/=1;a%=1 [a+=(5+8)] 
                        en donde el uno puede ser cualquier numero o una expresion
                     c) Programar el destructor para ejecutar el metodo cerrarArchivo 
@@ -45,8 +45,6 @@ namespace Semantica
         {
             cIf = cFor = 0;
         }
-
-
 
         ~Lenguaje()
         {
@@ -409,7 +407,7 @@ namespace Semantica
                     {
                         modVariable(nombreVariable, resultado);
                         //MODIFICACION EN ENSAMBLADOR
-                        asm.WriteLine("MOV "+nombreVariable+" , AX");
+                        //asm.WriteLine("MOV "+nombreVariable+" , AX");
                     }
                 }
                 else
@@ -529,13 +527,24 @@ namespace Semantica
             match(Tipos.Identificador);
             if(getContenido() == "++")
             {
-                match("++");
+//************************************************REQUERIMIENTO 2A ********************************************                
                 if (evaluacion)
                 {
                     modVariable(variable, getValor(variable)+1);
-
+                    if(Dominante < evaluaNumero(getValor(variable) + 1))
+                    {
+                        Dominante = evaluaNumero(getValor(variable) + 1);
+                    }
+                    if(Dominante <= getTipo(variable))
+                    {
+                        modVariable(variable, getValor(variable) + 1);
+                    }
+                    else
+                    {
+                        throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(variable) + " en la linea " + linea, log);
+                    }
                 }
-                //match("++");
+                match("++");
             }
             else
             {
@@ -605,7 +614,7 @@ namespace Semantica
             asm.WriteLine("POP AX");
             float e1 = stack.Pop();
             asm.WriteLine("POP BX");
-            asm.WriteLine("COMP AX, BX");
+            asm.WriteLine("CMP AX; BX");
             switch (operador)
             {
                 case "==":
@@ -821,6 +830,7 @@ namespace Semantica
                         asm.WriteLine("DIV BX");
                         asm.WriteLine("PUSH AX");
                         break;
+//*************************** REQUERIMIENTO 1A ******************************** 
                     case "%":
                         stack.Push(n2 % n1);
                         asm.WriteLine("DIV BX");
