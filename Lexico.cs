@@ -1,4 +1,6 @@
 //BRIONES ALMAGUER CINTHYA CRISTINA
+//c) Programar el destructor para ejecutar el metodo cerrarArchivo 
+//   Existe una libreria especial para esto, trabajar en Lexico??
 using 
 System.IO;
 

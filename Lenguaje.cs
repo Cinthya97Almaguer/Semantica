@@ -307,7 +307,87 @@ namespace Semantica
             Dominante = Variable.TipoDato.Char;
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
             {
-                //REQUERIMITNO 1.b)
+                /*REQUERIMITNO 1.b)
+                b) Agregar en Instruccion los incrementos de termino y factor 
+                       a++,a--,a+=1,a-=1,a*=1,a/=1;a%=1 [a+=(5+8)] 
+                       en donde el uno puede ser cualquier numero o una expresion*/
+                string operador = getContenido();
+                float valor;
+                switch (operador)
+                {
+                    case "++": 
+                        Incremento(evaluacion, nombreVariable);
+                        break;
+                    case "--": 
+                        Incremento(evaluacion, nombreVariable); 
+                        break;
+                    case "+=":
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(nombreVariable) + stack.Pop();
+                        asm.WriteLine("POP, AX");
+                        if (Dominante < evaluaNumero(valor))
+                        {
+                            Dominante = evaluaNumero(valor);
+                        }
+                        if (Dominante <= getTipo(nombreVariable))
+                        {
+                            if (evaluacion)
+                            {
+                                modVariable(nombreVariable, valor);
+                            }
+                        }
+                        else
+                        {
+                            throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(nombreVariable) + " en la linea " + linea, log);
+                        }
+                        modVariable(nombreVariable, valor);
+                        break;
+                    case "-=": 
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(nombreVariable) - stack.Pop();
+                        asm.WriteLine("POP, AX");
+                        modVariable(nombreVariable, valor);
+                        break;
+                    case "*=": 
+                        match(Tipos.IncrementoFactor);
+                        Expresion();
+                        valor = getValor(nombreVariable) * stack.Pop();
+                        asm.WriteLine("POP, AX");
+                        if (Dominante < evaluaNumero(valor))
+                        {
+                            Dominante = evaluaNumero(valor);
+                        }
+                        if (Dominante <= getTipo(nombreVariable))
+                        {
+                            if (evaluacion)
+                            {
+                                modVariable(nombreVariable, valor);
+                            }
+                        }
+                        else
+                        {
+                            throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(nombreVariable) + " en la linea " + linea, log);
+                        }
+                        modVariable(nombreVariable, valor);
+                        break;
+                    case "/=": 
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(nombreVariable) / stack.Pop();
+                        asm.WriteLine("POP, AX");
+                        modVariable(nombreVariable, valor);
+                        break;
+                    case "%=": 
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(nombreVariable) % stack.Pop();
+                        asm.WriteLine("POP, AX");
+                        modVariable(nombreVariable, valor);
+                        break;
+                }
+                match(Tipos.FinSentencia);       
                 //REQUERIMITNO 1.c)
             }           
             else
@@ -388,6 +468,7 @@ namespace Semantica
         //For -> for(Asignacion Condicion; Incremento) BloqueInstruccones | Intruccion 
         private void For(bool evaluacion)
         {
+            string nombreVariable = getContenido();
             string etiquetaInicioFor = "inicioFor" + cFor;
             string etiquetaFinFor = "finFor" + ++cFor;
             asm.WriteLine(etiquetaInicioFor + ":");
@@ -407,7 +488,7 @@ namespace Semantica
                 }   
                 match(";");
                 //Incrementador = Incremento(validar)
-                Incremento(validar);
+                Incremento(validar, nombreVariable);
                 //REQUERIMIENTO 1.d
                 match(")");
                 if (getContenido() == "{")
@@ -439,9 +520,8 @@ namespace Semantica
         }
 
         //Incremento -> Identificador ++ | --
-        private void Incremento(bool evaluacion)
+        private void Incremento(bool evaluacion, string variable)
         {
-            string variable = getContenido();
             if (!existeVariable(variable))
             {
                 throw new Error("\nError la variable <" + getContenido() + "> no existe en linea: "+linea, log);
@@ -449,11 +529,13 @@ namespace Semantica
             match(Tipos.Identificador);
             if(getContenido() == "++")
             {
+                match("++");
                 if (evaluacion)
                 {
                     modVariable(variable, getValor(variable)+1);
+
                 }
-                match("++");
+                //match("++");
             }
             else
             {
@@ -527,19 +609,19 @@ namespace Semantica
             switch (operador)
             {
                 case "==":
-                    asm.WriteLine("JNE "+etiqueta);
+                    asm.WriteLine("JNE "+ etiqueta);
                     return e1 == e2;
                 case ">":
-                    asm.WriteLine("JLE "+etiqueta);
+                    asm.WriteLine("JLE "+ etiqueta);
                     return e1 > e2;
                 case ">=":
-                    asm.WriteLine("JL "+etiqueta);
+                    asm.WriteLine("JL "+ etiqueta);
                     return e1 >= e2;
                 case "<":
-                    asm.WriteLine("JGE "+etiqueta);
+                    asm.WriteLine("JGE "+ etiqueta);
                     return e1 < e2;
                 case "<=":
-                    asm.WriteLine("JG "+etiqueta);
+                    asm.WriteLine("JG "+ etiqueta);
                     return e1 <= e2;
                 default:
                     asm.WriteLine("JE "+ etiqueta);
