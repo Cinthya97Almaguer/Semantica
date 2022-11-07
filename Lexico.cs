@@ -14,6 +14,7 @@ namespace Semantica
         const int F = -1;
         const int E = -2;
         protected int linea, posicion;
+       
         int[,] TRAND = new int[,]
         {
             //WS,EF,EL,L, D, .,	E, +, -, =,	:, ;, &, |,	!, >, <, *,	%, /, ", ?,La, ', #

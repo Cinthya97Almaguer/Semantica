@@ -1,7 +1,7 @@
 ;Archivo: prueba.cpp
-;Fecha 28/10/2022 09:49:00 a. m.
+;Fecha 06/11/2022 09:58:44 p. m.
 #make_COM#
-Include emu8086.Inc
+Include 'emu8086.inc'
 ORG 100h
 
 ;Variables: 
@@ -12,13 +12,27 @@ ORG 100h
 	a DW ?
 	d DW ?
 	altura DW ?
+	cinco DW ?
 	x DW ?
 	y DW ?
 	i DW ?
 	j DW ?
-PRINTN "Ingresa el radio del circulo"
+	k DW ?
+PRINTN "Introduce la altura de la piramide: "
 CALL scan_num
-MOV radio, CX
-RET
-DEFINE_SCAN_NUM
-END
+MOV altura, CX
+MOV AX, 2
+PUSH AX
+POP AX
+POP BX
+CMP AX; BX
+JGE if1
+inicioFor0
+POP AX
+MOViAX
+MOV AX, 0
+PUSH AX
+POP AX
+POP BX
+CMP AX; BX
+JLE 

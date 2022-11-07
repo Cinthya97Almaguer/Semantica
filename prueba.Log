@@ -1,15 +1,5 @@
 Archivo: prueba.cpp
-28/10/2022 09:49:00 a. m.
-
-Variables: 
-area Float 0
-radio Float 10
-pi Float 0
-resultado Float 0
-a Int 0
-d Int 0
-altura Int 0
-x Float 0
-y Char 0
-i Int 0
-j Int 0
+06/11/2022 09:58:44 p. m.
+altura 2 
+altura = 5
+i 0 Error de sintaxis, se espera un ) en linea: 17

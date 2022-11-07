@@ -126,7 +126,7 @@ namespace Semantica
         public void Programa()
         {
             asm.WriteLine("#make_COM#");
-            asm.WriteLine("Include emu8086.Inc");
+            asm.WriteLine("Include 'emu8086.inc'");
             asm.WriteLine("ORG 100h");
             Libreria();
             Variables();
@@ -135,6 +135,8 @@ namespace Semantica
             displayVariables();
             asm.WriteLine("RET");
             asm.WriteLine("DEFINE_SCAN_NUM");
+            asm.WriteLine("DEFINE_PRINT_NUM");
+            asm.WriteLine("DEFINE_PRINT_NUM_UNS");
             asm.WriteLine("END");
         }
 
@@ -297,10 +299,10 @@ namespace Semantica
             string nombreVariable = getContenido();
             if (!existeVariable(nombreVariable))
             {
-                throw new Error("\nError la variable <" + getContenido() +"> no existe en linea: "+linea, log);
+                throw new Error("\n2Error de sintaxis en la linea: " + linea + ", la variable <" + getContenido() + "> no existe", log);
             }
             log.WriteLine();
-            log.Write(getContenido()+" = ");
+            //log.Write(getContenido()+" = ");
             match(Tipos.Identificador);  
             Dominante = Variable.TipoDato.Char;
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
@@ -371,7 +373,7 @@ namespace Semantica
                         modVariable(nombreVariable, valor);
                         break;
                     case "/=": 
-                        match(Tipos.IncrementoTermino);
+                        match(Tipos.IncrementoFactor);
                         Expresion();
                         valor = getValor(nombreVariable) / stack.Pop();
                         asm.WriteLine("POP, AX");
@@ -469,24 +471,24 @@ namespace Semantica
             string nombreVariable = getContenido();
             string etiquetaInicioFor = "inicioFor" + cFor;
             string etiquetaFinFor = "finFor" + ++cFor;
-            asm.WriteLine(etiquetaInicioFor + ":");
+            asm.WriteLine(etiquetaInicioFor);
             match("for");
             match("(");
             Asignacion(evaluacion);
-            bool validar;
+            bool validar = true;
             int guardarPosicion = posicion;
             int guardarLinea = linea;
             int tamano = getContenido().Length;
-            validar = Condicion("");
-            do
+            while(validar)
             {
+                validar = Condicion("");
                 if (evaluacion == false)
                 {
                     validar = false;
                 }   
                 match(";");
-                //Incrementador = Incremento(validar)
-                Incremento(validar, nombreVariable);
+                string nombreIncremento = getContenido();
+                float valorIncremento = incrementarFor(validar);
                 //REQUERIMIENTO 1.d
                 match(")");
                 if (getContenido() == "{")
@@ -497,15 +499,16 @@ namespace Semantica
                 {
                     Instruccion(validar);
                 }
-                if(validar == true)
+                if(validar)
                 {
                     posicion = guardarPosicion - tamano;
                     linea = guardarLinea;
                     restablecerPosicion(posicion);
                     NextToken();
+                    modVariable(nombreIncremento, valorIncremento);
                 }
-            }while(validar);
-            asm.WriteLine(etiquetaFinFor + ":");
+            }
+            asm.WriteLine(etiquetaFinFor);
         }
 
         private void restablecerPosicion(int posicion)
@@ -514,7 +517,35 @@ namespace Semantica
             //restablecer el búfer interno del objeto StreamReader
             archivo.DiscardBufferedData();
             //se establece la posición dentro de la secuencia actual.
-            archivo.BaseStream.Seek(posicion, SeekOrigin.Begin);
+            archivo.BaseStream.Position = posicion;
+            //archivo.BaseStream.Seek(posicion, SeekOrigin.Begin);
+        }
+
+        private float incrementarFor(bool evaluacion)
+        {
+            string variable = getContenido();
+            if (!existeVariable(variable))
+            {
+                throw new Error("\nError de sintaxis for la variable " + variable + " no existe en la linea " + linea, log);
+            }
+            match(Tipos.Identificador);
+            if (getContenido() == "++")
+            {
+                match("++");
+                if (evaluacion)
+                {
+                    return getValor(variable) + 1;
+                }
+            }
+            else if (getContenido() == "--")
+            {
+                match("--");
+                if (evaluacion)
+                {
+                    return getValor(variable) - 1;
+                }
+            }
+            return 0;            
         }
 
         //Incremento -> Identificador ++ | --
@@ -875,8 +906,7 @@ namespace Semantica
                 string nombreVariable = getContenido();
                 if (existeVariable(nombreVariable) != true)
                 {
-                    throw new Error("\nError la variable <" + getContenido() +
-                                    "> no existe en linea: "+linea, log);
+                    throw new Error("Error de sintaxis en la linea: " + linea + ", la variable <" + getContenido() + "> no existe", log);
                 }
                 log.Write(getContenido() + " ");
                 if (Dominante  < getTipo(getContenido()))
