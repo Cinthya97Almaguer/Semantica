@@ -529,7 +529,82 @@ namespace Semantica
                 throw new Error("\nError de sintaxis for la variable " + variable + " no existe en la linea " + linea, log);
             }
             match(Tipos.Identificador);
-            if (getContenido() == "++")
+            Dominante = Variable.TipoDato.Char;
+            if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
+            {
+                string operador = getContenido();
+                float valor;
+                switch (operador)
+                {
+                    case "++":
+                        Incremento(evaluacion, variable);
+                        break;
+                    case "--": 
+                        Incremento(evaluacion, variable);
+                        break;
+                    case "+=":
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(variable) + stack.Pop();
+                        if (Dominante < evaluaNumero(valor))
+                        {
+                            Dominante = evaluaNumero(valor);
+                        }
+                        if (Dominante <= getTipo(variable))
+                        {
+                            if (evaluacion)
+                            {
+                                modVariable(variable, valor);
+                            }
+                        }
+                        else
+                        {
+                            throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(variable) + " en la linea " + linea, log);
+                        }
+                        modVariable(variable, valor);
+                        break;
+                    case "-=": 
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(variable) - stack.Pop();
+                        modVariable(variable, valor);
+                        break;
+                    case "*=": 
+                        match(Tipos.IncrementoFactor);
+                        Expresion();
+                        valor = getValor(variable) * stack.Pop();
+                        if (Dominante < evaluaNumero(valor))
+                        {
+                            Dominante = evaluaNumero(valor);
+                        }
+                        if (Dominante <= getTipo(variable))
+                        {
+                            if (evaluacion)
+                            {
+                                modVariable(variable, valor);
+                            }
+                        }
+                        else
+                        {
+                            throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(variable) + " en la linea " + linea, log);
+                        }
+                        modVariable(variable, valor);
+                        break;
+                    case "/=": 
+                        match(Tipos.IncrementoFactor);
+                        Expresion();
+                        valor = getValor(variable) / stack.Pop();
+                        modVariable(variable, valor);
+                        break;
+                    case "%=": 
+                        match(Tipos.IncrementoTermino);
+                        Expresion();
+                        valor = getValor(variable) % stack.Pop();
+                        modVariable(variable, valor);
+                        break;
+                }
+            }
+            /*if (getContenido() == "++")
             {
                 match("++");
                 if (evaluacion)
@@ -544,7 +619,8 @@ namespace Semantica
                 {
                     return getValor(variable) - 1;
                 }
-            }
+            }*/
+            
             return 0;            
         }
 
