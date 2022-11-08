@@ -6,7 +6,7 @@ X                   a) Agregar el residuo en la division en el porfactor
 X                   b) Agregar en Instruccion los incrementos de termino y factor 
                        a++,a--,a+=1,a-=1,a*=1,a/=1;a%=1 [a+=(5+8)] 
                        en donde el uno puede ser cualquier numero o una expresion
-                    c) Programar el destructor para ejecutar el metodo cerrarArchivo 
+X                   c) Programar el destructor para ejecutar el metodo cerrarArchivo 
                        Existe una libreria especial para esto, trabajar en Lexico??
                     
     Requerimiento 2.- Actualizacion parte 2
@@ -46,10 +46,22 @@ namespace Semantica
             cIf = cFor = 0;
         }
 
+        public void Dispose()
+        {
+            //https://learn.microsoft.com/es-es/dotnet/visual-basic/programming-guide/language-features/objects-and-classes/object-lifetime-how-objects-are-created-and-destroyed
+            // Dispose of unmanaged resources.
+            ///Dispose(true);
+            // Suppress finalization.
+            Console.WriteLine("\nDestructor");
+            cerrar();
+            GC.SuppressFinalize(this);
+        }
+
         ~Lenguaje()
         {
-            Console.WriteLine("Destructor");
-            cerrar();
+            /*Console.WriteLine("Destructor");
+            cerrar();*/
+            Dispose();
         }
 
         //PASAMOS EL NOMBRE Y TIPO DE DATO Y QUE LO AGREGUE A LA LISTA
@@ -74,7 +86,22 @@ namespace Semantica
             asm.WriteLine(";Variables: ");
             foreach (Variable v in variables)
             {
-                asm.WriteLine("\t" + v.getNombre() + " DW ?"); //+ v.getTipoDato() + " " + v.getValor());
+                asm.WriteLine("\t" + v.getNombre()); // + " DW ?"); + v.getTipoDato() + " " + v.getValor());
+                switch (v.getTipoDato())
+                {
+                    case Variable.TipoDato.Int:
+                        asm.WriteLine("DW ?");
+                        break;
+                    /*case Variable.TipoDato.Float:
+                        asm.WriteLine("DD ?");
+                        break;*/
+                    case Variable.TipoDato.Char:
+                        asm.WriteLine("DB ?");
+                        break;
+                    default:
+                        asm.WriteLine("DD ?");
+                        break;
+                }
             }
         }
 
@@ -301,8 +328,7 @@ namespace Semantica
             {
                 throw new Error("\nError de sintaxis en la linea: " + linea + ", la variable <" + getContenido() + "> no existe", log);
             }
-            log.WriteLine();
-            log.Write(getContenido() + " = ");
+            
             match(Tipos.Identificador);
 
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
@@ -317,6 +343,8 @@ namespace Semantica
             }
             else
             {
+                log.WriteLine();
+                log.Write(getContenido() + " = ");
                 match(Tipos.Asignacion);
                 Expresion();
                 match(";");
@@ -350,20 +378,50 @@ namespace Semantica
         {
             match("while");
             match("(");
+            int guardarPosicion = posicion;
+            int guardarLinea = linea;
             bool validar = Condicion("");
-            if (evaluacion == false)
+            string variable = getContenido();
+            int tamano = variable.Length;
             {
-                validar = false;
-            }
-            match(")");
-            if (getContenido() == "{")
-            {
-                BloqueInstrucciones(validar);
-            }
-            else
-            {
-                Instruccion(validar);
-            }
+                if (evaluacion == false)
+                {
+                    validar = false;
+                }
+                match(")");
+                if (getContenido() == "{")
+                {
+                    if(validar)
+                    {
+                        BloqueInstrucciones(evaluacion);
+                    }
+                    else
+                    {
+                        BloqueInstrucciones(false);
+                    }
+                    //BloqueInstrucciones(validar);
+                }
+                else
+                {
+                    if (validar)
+                    {
+                        Instruccion(evaluacion);
+                    }
+                    else
+                    {
+                        Instruccion(false);
+                    }
+                    //Instruccion(validar);
+                }
+                if (validar)
+                {
+                    posicion = guardarPosicion -tamano;
+                    linea = guardarLinea;
+                    restablecerPosicion(posicion);
+                    NextToken();
+                }
+            } while (validar);
+
         }
 
         //Do -> do bloque de instrucciones | intruccion while(Condicion)
@@ -442,8 +500,8 @@ namespace Semantica
             //restablecer el búfer interno del objeto StreamReader
             archivo.DiscardBufferedData();
             //se establece la posición dentro de la secuencia actual.
-            archivo.BaseStream.Position = posicion;
-            //archivo.BaseStream.Seek(posicion, SeekOrigin.Begin);
+            //archivo.BaseStream.Position = posicion;
+            archivo.BaseStream.Seek(posicion, SeekOrigin.Begin);
         }
 
         //Incremento -> Identificador ++ | --
@@ -459,7 +517,7 @@ namespace Semantica
             float nuevoValor = 0;
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
             {
-                
+
                 string operador = getContenido();
                 float valor = getValor(variable);
                 switch (operador)

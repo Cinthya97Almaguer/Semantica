@@ -117,6 +117,7 @@ namespace Semantica
         {
             archivo.Close();
             log.Close();
+            asm.Close();
         }       
 
         private void clasifica(int estado)

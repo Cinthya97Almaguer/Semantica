@@ -1,23 +1,36 @@
 ;Archivo: prueba.cpp
-;Fecha 07/11/2022 11:23:38 p. m.
+;Fecha 08/11/2022 12:03:36 a. m.
 #make_COM#
 Include 'emu8086.inc'
 ORG 100h
 
 ;Variables: 
-	area DW ?
-	radio DW ?
-	pi DW ?
-	resultado DW ?
-	a DW ?
-	d DW ?
-	altura DW ?
-	cinco DW ?
-	x DW ?
-	y DW ?
-	i DW ?
-	j DW ?
-	k DW ?
+	area
+DD ?
+	radio
+DD ?
+	pi
+DD ?
+	resultado
+DD ?
+	a
+DW ?
+	d
+DW ?
+	altura
+DW ?
+	cinco
+DW ?
+	x
+DD ?
+	y
+DB ?
+	i
+DW ?
+	j
+DW ?
+	k
+DW ?
 PRINTN "Introduce la altura de la piramide: "
 CALL scan_num
 MOV altura, CX

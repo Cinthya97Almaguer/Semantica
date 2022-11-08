@@ -1,9 +1,8 @@
 Archivo: prueba.cpp
-07/11/2022 11:23:38 p. m.
+08/11/2022 12:03:36 a. m.
 altura 2 
-i = altura = 5
+= = altura = 5
 i 0 1 
-j = 0 = 0
+= = 0 = 0
 j altura i - j 2 % 0 
-j = 
 Error la variable <+=> no existe en linea: 26
