@@ -1,5 +1,4 @@
 //BRIONES ALMAGUER CINTHYA CRISTINA
-#include <iostream>
 #include <stdio.h>
 #include <conio.h>
 float area, radio, pi, resultado;
@@ -13,10 +12,11 @@ void main(){
     printf("Introduce la altura de la piramide: ");
     scanf("altura", &altura);
     //Requerimiento 6.- Ejecutar el for y for anidado
-    if(altura > 2) {
+    if(altura >2) {
         for(i = altura; i > 0; i-=1){
-            j = 0; 
-            while(j < altura-i){
+            printf("hola");
+            j = 0;
+            while(j<altura-i){
                 if(j%2 == 0){
                     printf("*");
                 }
@@ -30,7 +30,7 @@ void main(){
         k = 0; 
         do
         {
-            printf("-");
+            printf("//");
             k += 2; 
         } while(k < altura*2);
         printf("\n"); 
