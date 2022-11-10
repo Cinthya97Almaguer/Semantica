@@ -13,7 +13,7 @@ X                   c) Programar el destructor para ejecutar el metodo cerrarArc
 X                   a) Marcar errores semanticos cuando los incrementos de termino o de factor
                        superen el rango de la variable char c=255, c++; error semantico
 X                   b) Considerar el inciso b y c para el For.
-                    c) Funcione el Do y el While.
+X                   c) Funcione el Do y el While.
     Requerimiento 3.- 
                     a) Considerar las variables y los casteo de las expresiones matematicas
                        en ensamblador
@@ -36,14 +36,15 @@ namespace Semantica
         List<Variable> variables = new List<Variable>();
         Stack<float> stack = new Stack<float>();
         Variable.TipoDato Dominante;
-        int cIf, cFor;
+        int cIf, cFor, cWhile, cDoWhile;
+        string incrementoEMU = "";
         public Lenguaje()
         {
-            cIf = cFor = 0;
+            cIf = cFor = cWhile = cDoWhile = 0;
         }
         public Lenguaje(string nombre) : base(nombre)
         {
-            cIf = cFor = 0;
+            cIf = cFor = cWhile = cDoWhile = 0;
         }
 
         public void Dispose()
@@ -67,7 +68,6 @@ namespace Semantica
         //PASAMOS EL NOMBRE Y TIPO DE DATO Y QUE LO AGREGUE A LA LISTA
         private void addVariable(string nombre, Variable.TipoDato tipo)
         {
-            //AGREGAMOS A LA LISTA UNA NUEVA VARIABLE
             variables.Add(new Variable(nombre, tipo));
         }
         private void displayVariables()
@@ -86,20 +86,20 @@ namespace Semantica
             asm.WriteLine(";Variables: ");
             foreach (Variable v in variables)
             {
-                asm.WriteLine("\t" + v.getNombre()); // + " DW ?"); + v.getTipoDato() + " " + v.getValor());
+                //asm.WriteLine("\t" + v.getNombre()); // + " DW ?"); + v.getTipoDato() + " " + v.getValor());
                 switch (v.getTipoDato())
                 {
                     case Variable.TipoDato.Int:
-                        asm.WriteLine("DW ?");
+                        asm.WriteLine("\t" + v.getNombre() + " DW "+ v.getValor());
                         break;
                     /*case Variable.TipoDato.Float:
                         asm.WriteLine("DD ?");
                         break;*/
                     case Variable.TipoDato.Char:
-                        asm.WriteLine("DB ?");
+                        asm.WriteLine("\t" + v.getNombre() + " DB "+ v.getValor());
                         break;
                     default:
-                        asm.WriteLine("DD ?");
+                        asm.WriteLine("\t" + v.getNombre() + " DD "+ v.getValor());
                         break;
                 }
             }
@@ -338,6 +338,7 @@ namespace Semantica
                 float nuevoValor = getValor(nombreVariable);
                 Dominante = Variable.TipoDato.Char;
                 modVariable(nombreVariable, Incremento(evaluacion, nombreVariable));
+                asm.WriteLine(incrementoEMU);
                 match(";");
                 //REQUERIMITNO 1.c)
             }
@@ -377,12 +378,15 @@ namespace Semantica
             }
         }
 
+        //AQUIESTAWHILE
         //While -> while(Condicion) bloque de instrucciones | instruccion
         private void While(bool evaluacion)
         {
             match("while");
             match("(");
-            
+            string etiquetaInicioWhile = "inicioWhile" + cWhile;
+            string etiquetaFinWhile = "finWhile" + cWhile;
+            asm.WriteLine(etiquetaInicioWhile + ":");
             bool validar;
             int guardarPosicion = posicion;
             int guardarLinea = linea;
@@ -390,6 +394,7 @@ namespace Semantica
             do
             {
                 validar = Condicion("");
+                asm.WriteLine(etiquetaInicioWhile);
                 if (!evaluacion)
                 {
                     validar = false;
@@ -426,6 +431,8 @@ namespace Semantica
                     restablecerPosicion(posicion);
                     NextToken();
                 }
+                asm.WriteLine("JMP " + etiquetaInicioWhile);
+                asm.WriteLine(etiquetaFinWhile + ":");
             } while (validar);
         }
 
@@ -433,7 +440,9 @@ namespace Semantica
         private void Do(bool evaluacion)
         {
             bool validar = evaluacion;
-            //string variable;
+            string etiquetaInicioDoWhile = "inicioWhile" + cDoWhile;
+            string etiquetaFinDoWhile = "finWhile" + cDoWhile;
+            //asm.WriteLine(etiquetaInicioDoWhile + ":");
             if (evaluacion == false)
             {
                 validar = false;
@@ -443,6 +452,7 @@ namespace Semantica
             int guardarLinea = linea;
             do
             {
+                asm.WriteLine(etiquetaInicioDoWhile + ":");
                 if (getContenido() == "{")
                 {
                     BloqueInstrucciones(evaluacion);
@@ -465,6 +475,8 @@ namespace Semantica
                     restablecerPosicion(posicion);
                     NextToken();
                 }
+                asm.WriteLine("JMP " + etiquetaInicioDoWhile);
+                asm.WriteLine(etiquetaFinDoWhile + ":");
             } while (validar);
 
             match(")");
@@ -475,13 +487,13 @@ namespace Semantica
         private void For(bool evaluacion)
         {
             string etiquetaInicioFor = "inicioFor" + cFor;
-            string etiquetaFinFor = "finFor" + cFor++;
-            asm.WriteLine(etiquetaInicioFor + ":");
+            string etiquetaFinFor = "finFor" + cFor;
+            
             match("for");
             match("(");
             Asignacion(evaluacion);
 
-            float valor = 0;
+            float valor;
             bool validar;
             int guardarPosicion = posicion;
             int guardarLinea = linea;
@@ -490,6 +502,7 @@ namespace Semantica
             do
             {
                 validar = Condicion("");
+                asm.WriteLine(etiquetaInicioFor + ":");
                 if (!evaluacion)
                 {
                     validar = false;
@@ -516,8 +529,11 @@ namespace Semantica
                     NextToken();
                     modVariable(getContenido(), valor);
                 }
+                asm.WriteLine(incrementoEMU);
+                asm.WriteLine("JMP " + etiquetaInicioFor);
+                asm.WriteLine(etiquetaFinFor + ":");
             } while (validar);
-            asm.WriteLine(etiquetaFinFor +":");
+            //asm.WriteLine(etiquetaFinFor +":");
         }
 
         private void restablecerPosicion(int posicion)
@@ -533,11 +549,7 @@ namespace Semantica
         private float Incremento(bool evaluacion, string variable)
         {
             string nombreVariable = getContenido();
-            /*if (!existeVariable(nombreVariable))
-            {
-                throw new Error("\nError la variable <" + getContenido() + "> no existe en linea: " + linea, log);
-            }
-            match(Tipos.Identificador);*/
+            //match(Tipos.Identificador);
             Dominante = Variable.TipoDato.Char;
             float nuevoValor = 0;
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
@@ -549,6 +561,7 @@ namespace Semantica
                 {
                     case "++":
                         match("++");
+                        incrementoEMU = "INC " + variable;
                         if (evaluacion)
                         {
                             nuevoValor = valor + 1;
@@ -556,6 +569,7 @@ namespace Semantica
                         break;
                     case "--":
                         match("--");
+                        incrementoEMU = "DEC " + variable;
                         if (evaluacion)
                         {
                             nuevoValor = valor - 1;
@@ -566,6 +580,8 @@ namespace Semantica
                         Expresion();
                         if (evaluacion)
                         {
+                            incrementoEMU = "POP AX";
+                            incrementoEMU += "ADD" + variable + ", AX";
                             nuevoValor = valor + stack.Pop();
                         }
                         break;
@@ -574,6 +590,8 @@ namespace Semantica
                         Expresion();
                         if (evaluacion)
                         {
+                            incrementoEMU = "POP AX";
+                            incrementoEMU += "SUB" + variable + ", AX";
                             nuevoValor = valor - stack.Pop();
                         }
                         break;
@@ -582,6 +600,10 @@ namespace Semantica
                         Expresion();
                         if (evaluacion)
                         {
+                            incrementoEMU = "POP AX";
+                            incrementoEMU += "MOV BX," + variable;
+                            incrementoEMU += "MUL BX";
+                            incrementoEMU += "MOV " + variable + ", AX";
                             nuevoValor = valor * stack.Pop();
                         }
                         break;
@@ -590,6 +612,10 @@ namespace Semantica
                         Expresion();
                         if (evaluacion)
                         {
+                            incrementoEMU = "POP AX";
+                            incrementoEMU += "MOV BX," + variable;
+                            incrementoEMU += "DIV BX";
+                            incrementoEMU += "MOV " + variable + ", AX";
                             nuevoValor = valor / stack.Pop();
                         }
                         break;
@@ -598,6 +624,11 @@ namespace Semantica
                         Expresion();
                         if (evaluacion)
                         {
+                            incrementoEMU = "POP AX";
+                            incrementoEMU += "MOV AX," + variable;
+                            incrementoEMU += "DIV BX";
+                            incrementoEMU += "MOV " + variable + ", DX";
+
                             nuevoValor = valor % stack.Pop();
                         }
                         break;
@@ -774,6 +805,7 @@ namespace Semantica
                 {
                     //REQUERIMIENTO DE PRINTF CODIGO ENSAMBLADOR PARA IMPRIMIR UNA VARIABLE
                     Console.Write(resultado);
+                    asm.WriteLine("CALL PRINT_NUM");
                 }
             }
             match(")");
@@ -946,6 +978,7 @@ namespace Semantica
                 }
                 stack.Push(getValor(getContenido()));
                 //REQUERIMIENTO 3
+                asm.WriteLine("PUSH AX");
                 match(Tipos.Identificador);
             }
             else

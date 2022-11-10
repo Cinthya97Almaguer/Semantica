@@ -14,7 +14,6 @@ void main(){
     //Requerimiento 6.- Ejecutar el for y for anidado
     if(altura >2) {
         for(i = altura; i > 0; i-=1){
-            printf("hola");
             j = 0;
             while(j<altura-i){
                 if(j%2 == 0){
@@ -49,5 +48,5 @@ void main(){
     printf("\nValor de variable char 'y' despues del casteo de a: ");
     printf(y);
     printf("\nA continuacion se intenta asignar un int a un char sin usar casteo: \n");
-    //y = a; //Requerimiento 1.- debe marcar error 
+    y = a; //Requerimiento 1.- debe marcar error 
 }
