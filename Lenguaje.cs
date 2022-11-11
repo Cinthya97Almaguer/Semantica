@@ -86,15 +86,12 @@ namespace Semantica
             asm.WriteLine(";Variables: ");
             foreach (Variable v in variables)
             {
-                //asm.WriteLine("\t" + v.getNombre()); // + " DW ?"); + v.getTipoDato() + " " + v.getValor());
+                //asm.WriteLine("\t" + v.getNombre() + " DW ?"); //+ v.getTipoDato() + " " + v.getValor());
                 switch (v.getTipoDato())
                 {
                     case Variable.TipoDato.Int:
                         asm.WriteLine("\t" + v.getNombre() + " DW " + v.getValor());
                         break;
-                    /*case Variable.TipoDato.Float:
-                        asm.WriteLine("DD ?");
-                        break;*/
                     case Variable.TipoDato.Char:
                         asm.WriteLine("\t" + v.getNombre() + " DB " + v.getValor());
                         break;
@@ -378,14 +375,29 @@ namespace Semantica
                 {
                     throw new Error("\nError de semantica no podemos asignar un  < " + Dominante + " > a un " + getTipo(nombreVariable) + " en la linea " + linea, log);
                 }
-                if (getTipo(nombreVariable) == Variable.TipoDato.Char)
+                /*if (getTipo(nombreVariable) == Variable.TipoDato.Char)
                 {
                     if(EMU)
                     {
-                        asm.WriteLine("MOV " + nombreVariable + " , AX");
+                        asm.WriteLine("MOV AH, 0");
                     }
+                }*/
+                if(EMU)
+                {
+                    switch (getTipo(nombreVariable))
+                    {
+                        case Variable.TipoDato.Char:
+                            asm.WriteLine("MOV " + nombreVariable + " , AL");
+                            break;
+                        case Variable.TipoDato.Int:
+                            asm.WriteLine("MOV " + nombreVariable + " , AX");
+                            break;
+                        case Variable.TipoDato.Float:
+                            asm.WriteLine("MOV " + nombreVariable + " , AX");
+                            break;
+                    }
+                    //asm.WriteLine("MOV " + nombreVariable + " , AX");
                 }
-                //asm.WriteLine("MOV" + nombreVariable + "AX");
             }
         }
 
@@ -610,12 +622,14 @@ namespace Semantica
             {
                 throw new Exception("Error en la linea " + linea + " la variable " + nombreVariable + " no existe");
             }*/
+            float valor = getValor(variable);
+            Variable.TipoDato tipoDato = getTipo(variable);
             Dominante = Variable.TipoDato.Char;
             float nuevoValor = 0;
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
             {
                 string operador = getContenido();
-                float valor = getValor(variable);
+                
                 switch (operador)
                 {
                     case "++":
@@ -648,7 +662,7 @@ namespace Semantica
                         if (EMU)
                         {
                             incrementoEMU = "POP AX ";
-                            incrementoEMU += "ADD" + variable + ", AX";
+                            incrementoEMU += "\nADD " + variable + ", AX";
                         }
                         //incrementoEMU = "POP AX";
                         //incrementoEMU += "ADD" + variable + ", AX";
@@ -664,7 +678,7 @@ namespace Semantica
                         if (EMU)
                         {
                             incrementoEMU = "POP AX ";
-                            incrementoEMU += "SUB" + variable + ", AX";
+                            incrementoEMU += "\nSUB" + variable + ", AX";
                         }
                         //incrementoEMU = "POP AX";
                         //incrementoEMU += "SUB" + variable + ", AX";
@@ -679,9 +693,9 @@ namespace Semantica
                         if (EMU)
                         {
                             incrementoEMU = "POP AX ";
-                            incrementoEMU += "MOV BX" + variable;
-                            incrementoEMU += "MUL BX";
-                            incrementoEMU += "MOV " + variable + ", AX";
+                            incrementoEMU += "\nMOV BX" + variable;
+                            incrementoEMU += "\nMUL BX";
+                            incrementoEMU += "\nMOV " + variable + ", AX";
                         }
                         //incrementoEMU = "POP AX";
                         //incrementoEMU += "MOV BX," + variable;
@@ -699,9 +713,9 @@ namespace Semantica
                         if (EMU)
                         {
                             incrementoEMU = "POP AX ";
-                            incrementoEMU += "MOV BX" + variable;
-                            incrementoEMU += "DIV BX";
-                            incrementoEMU += "MOV " + variable + ", AX";
+                            incrementoEMU += "\nMOV BX" + variable;
+                            incrementoEMU += "\nDIV BX";
+                            incrementoEMU += "\nMOV " + variable + ", AX";
                         }
                         //incrementoEMU = "POP AX";
                         //incrementoEMU += "MOV BX," + variable;
@@ -718,9 +732,9 @@ namespace Semantica
                         if (EMU)
                         {
                             incrementoEMU = "POP AX ";
-                            incrementoEMU += "MOV AX" + variable;
-                            incrementoEMU += "DIV BX";
-                            incrementoEMU += "MOV " + variable + ", DX";
+                            incrementoEMU += "\nMOV AX," + variable;
+                            incrementoEMU += "\nDIV BX";
+                            incrementoEMU += "\nMOV " + variable + ", DX";
                         }
                         //incrementoEMU = "POP AX";
                         //incrementoEMU += "MOV AX," + variable;
@@ -813,8 +827,8 @@ namespace Semantica
             //asm.WriteLine("CMP AX; BX");
             if (EMU)
             {
-                asm.WriteLine("POP AX");
                 asm.WriteLine("POP BX");
+                asm.WriteLine("POP AX");
                 asm.WriteLine("CMP AX, BX");
             }
             switch (operador)
@@ -876,7 +890,7 @@ namespace Semantica
             match("if");
             match("(");
             bool validar = Condicion(etiquetaIf, EMU);
-            if (evaluacion == false)
+            if (!evaluacion)
             {
                 validar = false;
             }
@@ -951,24 +965,26 @@ namespace Semantica
                 }
                 //asm.WriteLine("PRINTN \"" + getContenido() + "\"");
                 match(Tipos.Cadena);
-                aux = aux.Trim('"');
-                //Split para separar los saltos de linea
-                string[] subCadenas = aux.Split("\\n");
-                int i = 0;
-                int tam = subCadenas.Length - 1;
-                if (EMU)
+                if(EMU)
                 {
-                    foreach (string cad in subCadenas)
+                    if(cadena.Contains("\\n"))
                     {
-                        if (i == tam)
+                        string[] subCadena = cadena.Split("\\n");
+                        for(int i=0; i<subCadena.Length; i++)
                         {
-                            asm.WriteLine("PRINT \"" + cad + "\"");
+                            if(i == subCadena.Length -1)
+                            {
+                                asm.WriteLine("PRINT \'" + subCadena[i] + "\'");
+                            }
+                            else
+                            {
+                                asm.WriteLine("PRINTN \'" + subCadena[i] + "\'");
+                            }
                         }
-                        else
-                        {
-                            asm.WriteLine("PRINTN \"" + cad + "\"");
-                        }
-                        i++;
+                    }
+                    else
+                    {
+                        asm.WriteLine("PRINT \'" + cadena + "\'");
                     }
                 }
 
@@ -1207,8 +1223,20 @@ namespace Semantica
                 //REQUERIMIENTO 3
                 if (EMU)
                 {
-                    asm.WriteLine("MOV AX, " + getContenido());
-                    asm.WriteLine("PUSH AX");
+                    switch (getTipo(getContenido()))
+                    {
+                        case Variable.TipoDato.Char:
+                            asm.WriteLine("MOV " + getContenido() + " , AL");
+                            break;
+                        case Variable.TipoDato.Int:
+                            asm.WriteLine("MOV " + getContenido() + " , AX");
+                            break;
+                        case Variable.TipoDato.Float:
+                            asm.WriteLine("MOV " + getContenido() + " , AX");     
+                            break;
+                    }
+                    //asm.WriteLine("MOV AX, " + getContenido());
+                    //asm.WriteLine("PUSH AX");
                 }
                 //asm.WriteLine("PUSH AX");
                 match(Tipos.Identificador);
@@ -1245,7 +1273,22 @@ namespace Semantica
                     //asm.WriteLine("POP AX");
                     valorCasteo = Convertir(valorCasteo, casteo);
                     Dominante = casteo;
-                    stack.Push(valorCasteo);
+                    if (EMU)
+                    {
+                        asm.WriteLine("POP AX");
+                        switch (casteo)
+                        {
+                            case Variable.TipoDato.Char:
+                                asm.WriteLine("MOV AH, 0");
+                                asm.WriteLine("PUSH AX");
+                                break;
+                            case Variable.TipoDato.Int:
+                            case Variable.TipoDato.Float:
+                                asm.WriteLine("PUSH AX");
+                                break;
+                        }
+                        stack.Push(valorCasteo);
+                    }
                 }
             }
         }

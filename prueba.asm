@@ -1,5 +1,5 @@
 ;Archivo: prueba.cpp
-;Fecha 10/11/2022 11:40:52 p. m.
+;Fecha 11/11/2022 12:54:17 a. m.
 #make_COM#
 Include 'emu8086.inc'
 ORG 100h
@@ -18,27 +18,25 @@ ORG 100h
 	i DW 0
 	j DW 0
 	k DW 0
-PRINT "Introduce la altura de la piramide: "
+PRINT 'Introduce la altura de la piramide: '
 CALL SCAN_NUM
 MOV altura, CX
-MOV AX, altura
-PUSH AX
+MOV altura , AX
 MOV AX, 2
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JLE if1
-MOV AX, altura
-PUSH AX
+MOV altura , AX
 POP AX
+MOV i , AX
 inicioFor1:
-MOV AX, i
-PUSH AX
+MOV i , AX
 MOV AX, 0
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JLE finFor1
 MOV AX, 1
@@ -46,23 +44,20 @@ PUSH AX
 MOV AX, 0
 PUSH AX
 POP AX
+MOV j , AX
 inicioWhile1:
-MOV AX, j
-PUSH AX
-MOV AX, altura
-PUSH AX
-MOV AX, i
-PUSH AX
+MOV j , AX
+MOV altura , AX
+MOV i , AX
 POP BX 
 POP AX 
 SUB AX, BX
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JGE finWhile1
-MOV AX, j
-PUSH AX
+MOV j , AX
 MOV AX, 2
 PUSH AX
 POP BX
@@ -71,75 +66,77 @@ DIV BX
 PUSH DX
 MOV AX, 0
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JNE if2
-PRINT "*"
+PRINT '*'
 JMP else2
 if2:
-PRINT "-"
+PRINT '-'
 else2:
 MOV AX, 1
 PUSH AX
-POP AX ADDj, AX
+POP AX 
+ADD j, AX
 JMP inicioWhile1:
 finWhile1:
-PRINTN ""
-PRINT ""
-POP AX ADDj, AX
+PRINTN ''
+PRINT ''
+POP AX 
+ADD j, AX
 JMP inicioFor1
 finFor1:
 MOV AX, 0
 PUSH AX
 POP AX
+MOV k , AX
 inicioDoWhile1:
-PRINT "//"
+PRINT '-'
 MOV AX, 2
 PUSH AX
-POP AX ADDk, AX
-MOV AX, k
-PUSH AX
-MOV AX, altura
-PUSH AX
+POP AX 
+ADD k, AX
+MOV k , AX
+MOV altura , AX
 MOV AX, 2
 PUSH AX
 POP BX
 POP AX
 MUL BX
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JGE finDoWhile1
 JMP inicioDoWhile1
 finDoWhile1:
-PRINTN ""
-PRINT ""
+PRINTN ''
+PRINT ''
 JMP else1
 if1:
-PRINTN ""
-PRINTN "Error: la altura debe de ser mayor que 2"
-PRINT ""
+PRINTN ''
+PRINTN 'Error: la altura debe de ser mayor que 2'
+PRINT ''
 else1:
 MOV AX, 1
 PUSH AX
 MOV AX, 1
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JE if3
-PRINT "Esto no se debe imprimir"
+PRINT 'Esto no se debe imprimir'
 MOV AX, 2
 PUSH AX
 MOV AX, 2
 PUSH AX
-POP AX
 POP BX
+POP AX
 CMP AX, BX
 JNE if4
-PRINT "Esto tampoco"
+PRINT 'Esto tampoco'
 JMP else4
 if4:
 else4:
@@ -149,24 +146,25 @@ else3:
 MOV AX, 258
 PUSH AX
 POP AX
-PRINT "Valor de variable int 'a' antes del casteo: "
-MOV AX, a
-PUSH AX
+MOV a , AX
+PRINT 'Valor de variable int a antes del casteo: '
+MOV a , AX
 POP AX
 CALL PRINT_NUM
-MOV AX, a
+MOV a , AX
+POP AX
+MOV AH, 0
 PUSH AX
 POP AX
-MOV y , AX
-PRINTN ""
-PRINT "Valor de variable char 'y' despues del casteo de a: "
-MOV AX, y
-PUSH AX
+MOV y , AL
+PRINTN ''
+PRINT 'Valor de variable char y despues del casteo de a: '
+MOV y , AL
 POP AX
 CALL PRINT_NUM
-PRINTN ""
-PRINTN "A continuacion se intenta asignar un int a un char sin usar casteo: "
-PRINT ""
+PRINTN ''
+PRINTN 'A continuacion se intenta asignar un int a un char sin usar casteo: '
+PRINT ''
 RET
 DEFINE_SCAN_NUM
 DEFINE_PRINT_NUM
