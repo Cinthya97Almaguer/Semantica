@@ -1,6 +1,20 @@
 Archivo: prueba.cpp
-08/11/2022 11:10:50 p. m.
+10/11/2022 10:02:59 p. m.
 altura 2 
 = = altura = 5
-i 0 
-Error la variable <-=> no existe en linea: 16
+i 0 1 
+= = 0 = 0
+j altura i - j 2 % 0 1 i 0 1 
+= = 0 = 0
+j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1 
+= = 0 = 0
+j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1 
+= = 0 = 0
+j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1 
+= = 0 = 0
+j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1 
+= = 0 = 0
+j altura i - j 2 % 0 1 
+= = 0 = 0
+2 k altura 2 * 
+Error de sintaxis en la linea: 30, la variable <o> no existe
