@@ -40,11 +40,11 @@ namespace Semantica
         string incrementoEMU = "";
         public Lenguaje()
         {
-            cIf = cFor = cWhile = cDoWhile = 0;
+            cIf = cFor = 0;
         }
         public Lenguaje(string nombre) : base(nombre)
         {
-            cIf = cFor = cWhile = cDoWhile = 0;
+            cIf = cFor = 0;
         }
 
         public void Dispose()
@@ -164,7 +164,7 @@ namespace Semantica
             asm.WriteLine("DEFINE_SCAN_NUM");
             asm.WriteLine("DEFINE_PRINT_NUM");
             asm.WriteLine("DEFINE_PRINT_NUM_UNS");
-            asm.WriteLine("END");
+            //asm.WriteLine("END");
         }
 
         //Librerias -> #include<identificador(.h)?> Librerias?
@@ -402,7 +402,6 @@ namespace Semantica
             match("(");
             string etiquetaInicioWhile = "inicioWhile" + cWhile;
             string etiquetaFinWhile = "finWhile" + cWhile;
-            asm.WriteLine(etiquetaInicioWhile + ":");
             bool validar;
             int guardarPosicion = posicion;
             int guardarLinea = linea;
@@ -411,7 +410,7 @@ namespace Semantica
             {
                 if(EMU)
                 {
-                    asm.WriteLine(etiquetaInicioWhile);
+                    asm.WriteLine(etiquetaInicioWhile + ":" );
                 }
                 validar = Condicion(etiquetaFinWhile,EMU);
                 //asm.WriteLine(etiquetaInicioWhile);
@@ -453,7 +452,7 @@ namespace Semantica
                 }
                 if(EMU)
                 {
-                    asm.WriteLine("JMP " + etiquetaInicioWhile);
+                    asm.WriteLine("JMP " + etiquetaInicioWhile+ ":");
                     asm.WriteLine(etiquetaFinWhile + ":");
                 }
                 //asm.WriteLine("JMP " + etiquetaInicioWhile);
@@ -471,16 +470,17 @@ namespace Semantica
                 cDoWhile++;
             }
             bool validar = evaluacion;
-            string etiquetaInicioDoWhile = "inicioWhile" + cDoWhile;
-            string etiquetaFinDoWhile = "finWhile" + cDoWhile;
-            int guardarPosicion = posicion;
-            int guardarLinea = linea;
+            string etiquetaInicioDoWhile = "inicioDoWhile" + cDoWhile;
+            string etiquetaFinDoWhile = "finDoWhile" + cDoWhile;
+            
             //asm.WriteLine(etiquetaInicioDoWhile + ":");
-            if (!evaluacion)
+            if (evaluacion == false)
             {
                 validar = false;
             }
             match("do");
+            int guardarPosicion = posicion;
+            int guardarLinea = linea;
             do
             {
                 if (EMU)
@@ -500,7 +500,7 @@ namespace Semantica
                 match("(");
                 //variable = getContenido();
                 validar = Condicion(etiquetaFinDoWhile, EMU);
-                if (!evaluacion)
+                if (evaluacion == false)
                 {
                     validar = false;
                 }
@@ -606,10 +606,10 @@ namespace Semantica
         {
             string nombreVariable = getContenido();
             //match(Tipos.Identificador);
-            if (existeVariable(nombreVariable))
+            /*if (!existeVariable(nombreVariable))
             {
                 throw new Exception("Error en la linea " + linea + " la variable " + nombreVariable + " no existe");
-            }
+            }*/
             Dominante = Variable.TipoDato.Char;
             float nuevoValor = 0;
             if (getClasificacion() == Tipos.IncrementoTermino || getClasificacion() == Tipos.IncrementoFactor)
@@ -937,9 +937,14 @@ namespace Semantica
             string aux = getContenido();
             if (getClasificacion() == Tipos.Cadena)
             {
-                setContenido(getContenido().Replace("\"", ""));
+                /*setContenido(getContenido().Replace("\"", ""));
                 setContenido(getContenido().Replace("\\n", "\n"));
+                setContenido(getContenido().Replace("\\t", "     "));*/
+                setContenido(getContenido().Replace("\'", string.Empty));
+                setContenido(getContenido().Replace("\"", string.Empty));
                 setContenido(getContenido().Replace("\\t", "     "));
+                string cadena = getContenido();
+                setContenido(getContenido().Replace("\\n", "\n"));
                 if (evaluacion)
                 {
                     Console.Write(getContenido());

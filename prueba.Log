@@ -1,5 +1,5 @@
 Archivo: prueba.cpp
-10/11/2022 10:02:59 p. m.
+10/11/2022 11:40:52 p. m.
 altura 2 
 = = altura = 5
 i 0 1 
@@ -16,5 +16,22 @@ j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i 
 = = 0 = 0
 j altura i - j 2 % 0 1 
 = = 0 = 0
-2 k altura 2 * 
-Error de sintaxis en la linea: 30, la variable <o> no existe
+2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 1 1 2 2 
+= = 258 = 258
+a 
+= = a = 2
+y 
+Variables: 
+area Float 0
+radio Float 0
+pi Float 0
+resultado Float 0
+a Int 258
+d Int 0
+altura Int 5
+cinco Int 0
+x Float 0
+y Char 2
+i Int 0
+j Int 0
+k Int 10
