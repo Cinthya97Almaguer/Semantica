@@ -161,7 +161,7 @@ namespace Semantica
             asm.WriteLine("DEFINE_SCAN_NUM");
             asm.WriteLine("DEFINE_PRINT_NUM");
             asm.WriteLine("DEFINE_PRINT_NUM_UNS");
-            //asm.WriteLine("END");
+            asm.WriteLine("END");
         }
 
         //Librerias -> #include<identificador(.h)?> Librerias?
@@ -387,7 +387,7 @@ namespace Semantica
                     switch (getTipo(nombreVariable))
                     {
                         case Variable.TipoDato.Char:
-                            asm.WriteLine("MOV " + nombreVariable + " , AL");
+                            asm.WriteLine("MOV AH, 0");
                             break;
                         case Variable.TipoDato.Int:
                             asm.WriteLine("MOV " + nombreVariable + " , AX");
@@ -525,7 +525,7 @@ namespace Semantica
                 }
                 if (EMU)
                 {
-                    asm.WriteLine("JMP " + etiquetaInicioDoWhile);
+                    asm.WriteLine("JMP " + etiquetaInicioDoWhile + ":");
                     asm.WriteLine(etiquetaFinDoWhile + ":");
                 }
                 //asm.WriteLine("JMP " + etiquetaInicioDoWhile);
@@ -544,7 +544,7 @@ namespace Semantica
             {
                 cFor++;
             }
-            string etiquetaInicioFor = "inicioFor" + cFor;
+            string etiquetaIniciarFor = "inicioFor" + cFor;
             string etiquetaFinFor = "finFor" + cFor;
 
             match("for");
@@ -561,10 +561,9 @@ namespace Semantica
             {
                 if (EMU)
                 {
-                    asm.WriteLine(etiquetaInicioFor + ":");
+                    asm.WriteLine(etiquetaIniciarFor + ":");
                 }
                 validar = Condicion(etiquetaFinFor, EMU);
-                //asm.WriteLine(etiquetaInicioFor + ":");
                 if (!evaluacion)
                 {
                     validar = false;
@@ -594,12 +593,9 @@ namespace Semantica
                 if (EMU)
                 {
                     asm.WriteLine(incrementoEMU);
-                    asm.WriteLine("JMP " + etiquetaInicioFor);
+                    asm.WriteLine("JMP " + etiquetaIniciarFor);
                     asm.WriteLine(etiquetaFinFor + ":");
                 }
-                //asm.WriteLine(incrementoEMU);
-                //asm.WriteLine("JMP " + etiquetaInicioFor);
-                //asm.WriteLine(etiquetaFinFor + ":");
                 EMU = false;
             } while (validar);
         }
@@ -709,11 +705,14 @@ namespace Semantica
                         break;
                     case "/=":
                         match("/=");
+//divide primero el valor de la variable (a la izquierda del operador)
+// entre el valor de la expresión (a la derecha del operador) a=12 b=3 a/=b ---
+                
                         Expresion(EMU);
                         if (EMU)
                         {
                             incrementoEMU = "POP AX ";
-                            incrementoEMU += "\nMOV BX" + variable;
+                            incrementoEMU += "\nMOV AX" + variable;
                             incrementoEMU += "\nDIV BX";
                             incrementoEMU += "\nMOV " + variable + ", AX";
                         }
@@ -821,10 +820,8 @@ namespace Semantica
             match(Tipos.OperadorRelacional);
             Expresion(EMU);
             float e2 = stack.Pop();
-            //asm.WriteLine("POP AX");
             float e1 = stack.Pop();
-            //asm.WriteLine("POP BX");
-            //asm.WriteLine("CMP AX; BX");
+
             if (EMU)
             {
                 asm.WriteLine("POP BX");
@@ -1226,17 +1223,17 @@ namespace Semantica
                     switch (getTipo(getContenido()))
                     {
                         case Variable.TipoDato.Char:
-                            asm.WriteLine("MOV " + getContenido() + " , AL");
+                            asm.WriteLine("MOV AL," + getContenido());
                             break;
                         case Variable.TipoDato.Int:
-                            asm.WriteLine("MOV " + getContenido() + " , AX");
+                            asm.WriteLine("MOV AX, " + getContenido());
                             break;
                         case Variable.TipoDato.Float:
-                            asm.WriteLine("MOV " + getContenido() + " , AX");     
+                            asm.WriteLine("MOV AX, " + getContenido());     
                             break;
                     }
                     //asm.WriteLine("MOV AX, " + getContenido());
-                    //asm.WriteLine("PUSH AX");
+                    asm.WriteLine("PUSH AX");
                 }
                 //asm.WriteLine("PUSH AX");
                 match(Tipos.Identificador);

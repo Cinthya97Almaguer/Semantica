@@ -1,7 +1,7 @@
 Archivo: prueba.cpp
-11/11/2022 12:54:17 a. m.
+12/11/2022 11:25:58 p. m.
 altura 2 
-= = altura = 5
+= = altura = 4
 i 0 1 
 = = 0 = 0
 j altura i - j 2 % 0 1 i 0 1 
@@ -12,11 +12,9 @@ j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1
 = = 0 = 0
 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1 
 = = 0 = 0
-j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 j altura i - j 2 % 0 1 i 0 1 
-= = 0 = 0
 j altura i - j 2 % 0 1 
 = = 0 = 0
-2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 1 1 2 2 
+2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 2 k altura 2 * 1 1 2 2 
 = = 258 = 258
 a 
 = = a = 2
@@ -28,10 +26,10 @@ pi Float 0
 resultado Float 0
 a Int 258
 d Int 0
-altura Int 5
+altura Int 4
 cinco Int 0
 x Float 0
 y Char 2
 i Int 0
 j Int 0
-k Int 10
+k Int 8

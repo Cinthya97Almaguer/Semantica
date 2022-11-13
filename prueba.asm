@@ -1,5 +1,5 @@
 ;Archivo: prueba.cpp
-;Fecha 11/11/2022 12:54:17 a. m.
+;Fecha 12/11/2022 11:25:58 p. m.
 #make_COM#
 Include 'emu8086.inc'
 ORG 100h
@@ -21,18 +21,21 @@ ORG 100h
 PRINT 'Introduce la altura de la piramide: '
 CALL SCAN_NUM
 MOV altura, CX
-MOV altura , AX
+MOV AX, altura
+PUSH AX
 MOV AX, 2
 PUSH AX
 POP BX
 POP AX
 CMP AX, BX
 JLE if1
-MOV altura , AX
+MOV AX, altura
+PUSH AX
 POP AX
 MOV i , AX
 inicioFor1:
-MOV i , AX
+MOV AX, i
+PUSH AX
 MOV AX, 0
 PUSH AX
 POP BX
@@ -46,9 +49,12 @@ PUSH AX
 POP AX
 MOV j , AX
 inicioWhile1:
-MOV j , AX
-MOV altura , AX
-MOV i , AX
+MOV AX, j
+PUSH AX
+MOV AX, altura
+PUSH AX
+MOV AX, i
+PUSH AX
 POP BX 
 POP AX 
 SUB AX, BX
@@ -57,7 +63,8 @@ POP BX
 POP AX
 CMP AX, BX
 JGE finWhile1
-MOV j , AX
+MOV AX, j
+PUSH AX
 MOV AX, 2
 PUSH AX
 POP BX
@@ -97,8 +104,10 @@ MOV AX, 2
 PUSH AX
 POP AX 
 ADD k, AX
-MOV k , AX
-MOV altura , AX
+MOV AX, k
+PUSH AX
+MOV AX, altura
+PUSH AX
 MOV AX, 2
 PUSH AX
 POP BX
@@ -109,7 +118,7 @@ POP BX
 POP AX
 CMP AX, BX
 JGE finDoWhile1
-JMP inicioDoWhile1
+JMP inicioDoWhile1:
 finDoWhile1:
 PRINTN ''
 PRINT ''
@@ -148,18 +157,21 @@ PUSH AX
 POP AX
 MOV a , AX
 PRINT 'Valor de variable int a antes del casteo: '
-MOV a , AX
+MOV AX, a
+PUSH AX
 POP AX
 CALL PRINT_NUM
-MOV a , AX
+MOV AX, a
+PUSH AX
 POP AX
 MOV AH, 0
 PUSH AX
 POP AX
-MOV y , AL
+MOV AH, 0
 PRINTN ''
 PRINT 'Valor de variable char y despues del casteo de a: '
-MOV y , AL
+MOV AL,y
+PUSH AX
 POP AX
 CALL PRINT_NUM
 PRINTN ''
@@ -169,3 +181,4 @@ RET
 DEFINE_SCAN_NUM
 DEFINE_PRINT_NUM
 DEFINE_PRINT_NUM_UNS
+END
